@@ -1,0 +1,52 @@
+name: Deploy HelpDesk App to Digital Ocean
+
+# Se ejecuta solo cuando haces un push a la rama 'main'
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    # CORRECCIÓN: Usar el nombre correcto del ejecutor, todo en minúsculas
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Obtenemos el código del repositorio
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Nos conectamos al servidor y ejecutamos los comandos de despliegue
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Navegar al directorio del proyecto
+            cd /var/www/helpdesk-app
+            
+            # Obtener los últimos cambios del repositorio
+            git pull origin main
+            
+            # Instalar/actualizar dependencias del backend
+            echo "Installing server dependencies..."
+            cd server
+            # MEJORA: Instalar solo las dependencias de producción
+            npm install
+            cd ..
+            
+            # Instalar/actualizar dependencias del frontend y construirlo para producción
+            echo "Building client..."
+            cd client
+            npm install
+            npm run build
+            cd ..
+            
+            # Reiniciar la aplicación de backend para aplicar los cambios
+            echo "Restarting application..."
+            # Es más robusto usar el nombre completo del servicio
+            sudo systemctl restart helpdesk-api.service
+            
+            echo "Deployment finished!"
