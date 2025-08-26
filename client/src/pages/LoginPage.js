@@ -30,7 +30,7 @@ const LoginPage = () => {
           <input name="email" type="email" value={email} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Correo electrónico" />
           <input name="password" type="password" value={password} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contraseña" />
           <div>
-            <button type="submit" className="w-full px-4 py-2 font-semibold text-white bg-blue-999 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <button type="submit" className="w-full px-4 py-2 font-semibold text-white bg-blue-300 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
               Entrar
             </button>
           </div>

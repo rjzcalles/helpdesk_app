@@ -25,7 +25,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # Navegar al directorio del proyecto
-            cd /var/www/helpdesk-app
+            cd /var/www/helpdesk_app
             
             # Obtener los últimos cambios del repositorio
             git pull origin main
