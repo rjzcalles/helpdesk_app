@@ -27,6 +27,9 @@ jobs:
             # Navegar al directorio del proyecto
             cd /var/www/helpdesk_app
             
+            # Elimina cualquier cambio local que no esté en el repositorio
+            git reset --hard HEAD
+            
             # Obtener los últimos cambios del repositorio
             git pull origin main
             
