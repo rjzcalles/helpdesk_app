@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import incidentService from '../services/incidentService';
 import FactoryPlanVisualization from '../components/TicketVisualization';
 
-const socket = io('http://localhost:5001');
+const socket = io();
 
 const getRoleFromToken = () => {
   const token = localStorage.getItem('token');
