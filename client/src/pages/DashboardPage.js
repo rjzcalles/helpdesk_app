@@ -32,7 +32,15 @@ const DashboardPage = () => {
   const [incidents, setIncidents] = useState([]);
   const [formData, setFormData] = useState({ title: '', description: '', area: '' });
 
+  // <-- MOVIDA AQUÍ
+  // Definimos la función handleLogout ANTES de que sea usada por el useEffect.
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('token');
+    navigate('/');
+  }, [navigate]);
+
   useEffect(() => {
+    // Ahora, cuando se llama a handleLogout aquí, ya ha sido definida.
     if (!userRole) {
       handleLogout();
       return;
@@ -71,7 +79,7 @@ const DashboardPage = () => {
       socket.off('incident_created');
       socket.off('incident_updated');
     };
-  }, [userRole, handleLogout]);
+  }, [userRole, handleLogout]); // Las dependencias están correctas
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -85,10 +93,7 @@ const DashboardPage = () => {
     }
   };
 
-const handleLogout = useCallback(() => {
-    localStorage.removeItem('token');
-    navigate('/');
-  }, [navigate]);
+  // La función handleLogout ya no está aquí. La hemos movido arriba.
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
