@@ -13,8 +13,6 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     description: DataTypes.TEXT,
     status: DataTypes.STRING,
-    
-    // --- ASEGÚRATE DE QUE ESTAS LÍNEAS EXISTAN ---
     area: DataTypes.STRING,
     locationX: DataTypes.FLOAT,
     locationY: DataTypes.FLOAT,
