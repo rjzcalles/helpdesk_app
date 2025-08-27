@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { jwtDecode } from 'jwt-decode';
@@ -71,7 +71,7 @@ const DashboardPage = () => {
       socket.off('incident_created');
       socket.off('incident_updated');
     };
-  }, [userRole]);
+  }, [userRole, handleLogout]);
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -85,10 +85,10 @@ const DashboardPage = () => {
     }
   };
 
-  const handleLogout = () => {
+const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     navigate('/');
-  };
+  }, [navigate]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
