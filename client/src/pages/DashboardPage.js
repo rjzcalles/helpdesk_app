@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import incidentService from '../services/incidentService';
 import FactoryPlanVisualization from '../components/TicketVisualization';
 
-const socket = io('http://localhost:5000');
+const socket = io();
 
 const getRoleFromToken = () => {
   const token = localStorage.getItem('token');
@@ -24,13 +24,32 @@ const factoryAreas = [
   { id: 'linea-ensamblaje-1', name: 'Línea de Ensamblaje 1' },
   { id: 'zona-soldadura', name: 'Zona de Soldadura' },
   { id: 'control-calidad', name: 'Control de Calidad' },
+  { id: 'netbees', name: 'netbees' },
+  { id: 'oficinas', name: 'oficinas' },
+  { id: 'racores', name: 'racores' },
 ];
+
+// ...existing code...
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [userRole] = useState(getRoleFromToken());
   const [incidents, setIncidents] = useState([]);
   const [formData, setFormData] = useState({ title: '', description: '', area: '' });
+
+  // Nuevo: obtener el userId del token
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        return jwtDecode(token).id; // Asegúrate que el payload tiene 'id'
+      } catch (error) {
+        return null;
+      }
+    }
+    return null;
+  };
+  const userId = getUserIdFromToken();
 
   useEffect(() => {
     if (!userRole) {
@@ -90,6 +109,11 @@ const DashboardPage = () => {
     navigate('/');
   };
 
+  // Filtrar solo los tickets del usuario si es user
+  const userIncidents = userRole === 'user'
+    ? incidents.filter(inc => inc.userId === userId)
+    : incidents;
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -102,35 +126,79 @@ const DashboardPage = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-              <h2 className="text-xl font-semibold mb-4 text-white">Reportar Nueva Incidencia</h2>
-              <form onSubmit={onSubmit} className="space-y-4">
-                <input type="text" name="title" value={formData.title} onChange={onChange} placeholder="Título de la incidencia" required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                
-                <select name="area" value={formData.area} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="" disabled>Selecciona un área</option>
-                  {factoryAreas.map(area => (
-                    <option key={area.id} value={area.id}>{area.name}</option>
-                  ))}
-                </select>
+        {userRole === 'user' ? (
+          <div className="grid grid-cols-1 gap-8">
+            <div>
+              <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h2 className="text-xl font-semibold mb-4 text-white">Reportar Nueva Incidencia</h2>
+                <form onSubmit={onSubmit} className="space-y-4">
+                  <input type="text" name="title" value={formData.title} onChange={onChange} placeholder="Título de la incidencia" required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  
+                  <select name="area" value={formData.area} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="" disabled>Selecciona un área</option>
+                    {factoryAreas.map(area => (
+                      <option key={area.id} value={area.id}>{area.name}</option>
+                    ))}
+                  </select>
 
-                <textarea name="description" value={formData.description} onChange={onChange} placeholder="Describe el problema..." required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md" rows="4"></textarea>
-                
-                <button type="submit" className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
-                  Enviar Incidencia
-                </button>
-              </form>
+                  <textarea name="description" value={formData.description} onChange={onChange} placeholder="Describe el problema..." required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md" rows="4"></textarea>
+                  
+                  <button type="submit" className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+                    Enviar Incidencia
+                  </button>
+                </form>
+              </div>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-white">Mis Incidencias</h2>
+              <ul className="space-y-4">
+                {userIncidents.length === 0 && (
+                  <li className="text-gray-400">No has creado incidencias aún.</li>
+                )}
+                {userIncidents.map(inc => (
+                  <li key={inc.id} className="bg-gray-700 p-4 rounded-md border border-gray-600">
+                    <div className="font-bold text-white">{inc.title}</div>
+                    <div className="text-gray-300">{inc.description}</div>
+                    <div className="text-sm text-gray-400">Área: {factoryAreas.find(a => a.id === inc.area)?.name || inc.area}</div>
+                    <div className="text-sm text-gray-400">Estado: {inc.status}</div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-          <div className="lg:col-span-2">
-            <FactoryPlanVisualization incidents={incidents} />
+        ) : (
+          // Admin u otros roles ven la visualización general
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h2 className="text-xl font-semibold mb-4 text-white">Reportar Nueva Incidencia</h2>
+                <form onSubmit={onSubmit} className="space-y-4">
+                  <input type="text" name="title" value={formData.title} onChange={onChange} placeholder="Título de la incidencia" required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  
+                  <select name="area" value={formData.area} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="" disabled>Selecciona un área</option>
+                    {factoryAreas.map(area => (
+                      <option key={area.id} value={area.id}>{area.name}</option>
+                    ))}
+                  </select>
+
+                  <textarea name="description" value={formData.description} onChange={onChange} placeholder="Describe el problema..." required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md" rows="4"></textarea>
+                  
+                  <button type="submit" className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+                    Enviar Incidencia
+                  </button>
+                </form>
+              </div>
+            </div>
+            <div className="lg:col-span-2">
+              <FactoryPlanVisualization incidents={incidents} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default DashboardPage;
+// ...existing code...

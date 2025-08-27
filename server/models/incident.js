@@ -17,7 +17,12 @@ module.exports = (sequelize, DataTypes) => {
     // --- ASEGÚRATE DE QUE ESTAS LÍNEAS EXISTAN ---
     area: DataTypes.STRING,
     locationX: DataTypes.FLOAT,
-    locationY: DataTypes.FLOAT
+    locationY: DataTypes.FLOAT,
+    asignado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
     
   }, {
     sequelize,

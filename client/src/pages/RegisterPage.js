@@ -12,7 +12,7 @@ const RegisterPage = () => {
   const onSubmit = async e => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/users/register', formData);
+      await axios.post('/api/users/register', formData);
       setMessage('¡Registro exitoso! Ahora puedes iniciar sesión.');
     } catch (err) {
       setMessage(err.response?.data?.message || 'Algo salió mal.');
