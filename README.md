@@ -31,12 +31,12 @@ on the server folder server run this command:
 ------------------------------------------------------------
 
 ## .env --dev
-# Autenticación
-JWT_SECRET="MI_PALABRA_SECRETA_SUPER_SEGURA"
+`# Autenticación`
+`JWT_SECRET="MI_PALABRA_SECRETA_SUPER_SEGURA"`
 
-# Base de Datos
-DB_USER="root"
-DB_PASS=""
-DB_NAME="helpdesk_db"
-DB_HOST="127.0.0.1"
+`# Base de Datos`
+`DB_USER="root"`
+`DB_PASS=""`
+`DB_NAME="helpdesk_db"`
+`DB_HOST="127.0.0.1"`
 
