@@ -1,0 +1,52 @@
+name: Deploy Pre-built App to Digital Ocean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Define la ruta de la aplicación en el servidor
+            APP_DIR="/var/www/helpdesk_app"
+            
+            # Comprueba si el directorio de la aplicación ya existe
+            # Si no existe, clona el repositorio por primera vez
+            if [ ! -d "$APP_DIR"/.git ]; then
+              echo "Directorio .git no encontrado. Clonando repositorio..."
+              # Clona en un directorio temporal y luego mueve el contenido
+              git clone https://github.com/rjzcalles/helpdesk_app.git $APP_DIR
+            fi
+            
+            # Navega al directorio de la aplicación
+            cd $APP_DIR
+            
+            echo "Forzando la actualización desde el repositorio..."
+            # Descarta cualquier cambio local que pudiera existir en el servidor
+            git reset --hard HEAD
+            # Limpia archivos y directorios no rastreados para asegurar un estado limpio
+            git clean -fd
+            # Descarga la versión más reciente de la rama main (incluyendo la carpeta 'build')
+            git pull origin main
+            
+            # Instalar/actualizar dependencias SOLO del backend
+            echo "Installing server dependencies..."
+            cd server
+            npm install # Usamos --production para instalar solo lo necesario en producción
+            cd ..
+            
+            # Reiniciar la aplicación de backend para aplicar los cambios
+            echo "Restarting application..."
+            sudo systemctl restart helpdesk-api.service
+            
+            echo "Deployment finished!"

@@ -2,26 +2,19 @@
 
 version 1.0.0
 
-## Description
-
-Helpdesk app is a simple helpdesk application that allows users to create tickets and assign them to agents. Agents can then view and resolve tickets.
-
 ## Installation
 
 1. Clone the repository
+
+on the server folder client run this command:
+1. Run `npm install`
+2. Run `npm start`
+
+on the server folder server run this command:
+1. Modify the .env file
 2. Run `npm install`
-3. Run `npm start`
-
-## Usage
-
-1. Open the application in your browser
-2. Create a new ticket by clicking on the "Create Ticket" button
-3. Assign the ticket to an agent
-4. Agents can view and resolve tickets in the "Tickets" section
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+3. Run `npx sequelize-cli db:migrate`
+4. Run `node index.js`
 
 ## Authors
 
