@@ -1,4 +1,4 @@
-name: Build and Deploy HelpDesk App
+name: Deploy Pre-built App to Digital Ocean
 
 on:
   push:
@@ -6,41 +6,47 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-
-      - name: Build Frontend
-        run: |
-          cd client
-          npm install
-          npm run build
-
-      - name: Install Backend Production Dependencies
-        run: |
-          cd server
-          npm install
-      
-      - name: Deploy files with rsync
+      - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Sincroniza los archivos. -a preserva permisos, -v es verboso, --delete elimina archivos viejos.
-            # Se excluye la carpeta node_modules del cliente y el .git para no transferirlos.
-            rsync -av --delete --exclude 'client/node_modules' --exclude '.git' $GITHUB_WORKSPACE/ /var/www/helpdesk_app/
+            # Define la ruta de la aplicación en el servidor
+            APP_DIR="/var/www/helpdesk_app"
             
-            # Reinicia el servicio
+            # Comprueba si el directorio de la aplicación ya existe
+            # Si no existe, clona el repositorio por primera vez
+            if [ ! -d "$APP_DIR"/.git ]; then
+              echo "Directorio .git no encontrado. Clonando repositorio..."
+              # Clona en un directorio temporal y luego mueve el contenido
+              git clone https://github.com/rjzcalles/helpdesk_app.git $APP_DIR
+            fi
+            
+            # Navega al directorio de la aplicación
+            cd $APP_DIR
+            
+            echo "Forzando la actualización desde el repositorio..."
+            # Descarta cualquier cambio local que pudiera existir en el servidor
+            git reset --hard HEAD
+            # Limpia archivos y directorios no rastreados para asegurar un estado limpio
+            git clean -fd
+            # Descarga la versión más reciente de la rama main (incluyendo la carpeta 'build')
+            git pull origin main
+            
+            # Instalar/actualizar dependencias SOLO del backend
+            echo "Installing server dependencies..."
+            cd server
+            npm install # Usamos --production para instalar solo lo necesario en producción
+            cd ..
+            
+            # Reiniciar la aplicación de backend para aplicar los cambios
             echo "Restarting application..."
             sudo systemctl restart helpdesk-api.service
+            
             echo "Deployment finished!"

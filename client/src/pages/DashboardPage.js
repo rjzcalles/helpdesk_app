@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { jwtDecode } from 'jwt-decode';
@@ -32,15 +32,7 @@ const DashboardPage = () => {
   const [incidents, setIncidents] = useState([]);
   const [formData, setFormData] = useState({ title: '', description: '', area: '' });
 
-  // <-- MOVIDA AQUÍ
-  // Definimos la función handleLogout ANTES de que sea usada por el useEffect.
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem('token');
-    navigate('/');
-  }, [navigate]);
-
   useEffect(() => {
-    // Ahora, cuando se llama a handleLogout aquí, ya ha sido definida.
     if (!userRole) {
       handleLogout();
       return;
@@ -79,7 +71,7 @@ const DashboardPage = () => {
       socket.off('incident_created');
       socket.off('incident_updated');
     };
-  }, [userRole, handleLogout]); // Las dependencias están correctas
+  }, [userRole]);
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -93,7 +85,10 @@ const DashboardPage = () => {
     }
   };
 
-  // La función handleLogout ya no está aquí. La hemos movido arriba.
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
