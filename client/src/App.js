@@ -7,36 +7,41 @@ import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
-    <div className="bg-gray-900 min-h-screen text-gray-200">
-      <Router>
-        <Routes>
-          {/* Rutas Públicas */}
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<HomePage />} />
+    // El fondo y el color de texto base se controlan desde index.css en el body
+    <Router>
+      <Routes>
+        {/* Rutas Públicas */}
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<HomePage />} />
 
-          {/* Rutas Privadas */}
-          <Route element={<PrivateRoute />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-          </Route>
-        </Routes>
-      </Router>
-    </div>
+        {/* Rutas Privadas */}
+        <Route element={<PrivateRoute />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
 const HomePage = () => (
-  <div className="flex flex-col items-center justify-center h-screen">
-    <div className="text-center">
-      <h1 className="text-5xl font-bold text-white">
-        Bienvenido a <span className="text-blue-400">HelpDesk Maflow</span>
+  <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    <div className="text-center animate-fade-in-up">
+      <h1 className="text-5xl font-bold text-futuristic-text-primary">
+        Bienvenido a <span className="text-futuristic-secondary">Helpdesk</span>
       </h1>
-      <p className="mt-4 text-lg text-gray-400">Soluciones de soporte para la industria 4.0</p>
-      <div className="mt-8 space-x-4">
-        <Link to="/login" className="px-6 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+      <p className="mt-4 text-lg text-futuristic-text-secondary">
+        Plataforma de Soporte para el Gemelo Digital
+      </p>
+      <div className="mt-8 space-x-6">
+        <Link 
+          to="/login" 
+          className="px-8 py-3 font-bold uppercase tracking-wider text-white bg-futuristic-primary rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 hover:shadow-neon-red">
           Iniciar Sesión
         </Link>
-        <Link to="/register" className="px-6 py-2 font-semibold text-blue-400 border border-blue-400 rounded-md hover:bg-blue-500 hover:text-white transition-colors">
+        <Link 
+          to="/register" 
+          className="px-8 py-3 font-bold uppercase tracking-wider text-futuristic-secondary border-2 border-futuristic-secondary rounded-lg hover:bg-futuristic-secondary hover:text-futuristic-background transition-all duration-300 transform hover:scale-105 hover:shadow-neon-cyan">
           Registrarse
         </Link>
       </div>

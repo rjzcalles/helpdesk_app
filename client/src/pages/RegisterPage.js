@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '' });
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
   const { firstName, lastName, email, password } = formData;
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,38 +14,55 @@ const RegisterPage = () => {
     e.preventDefault();
     try {
       await axios.post('/api/users/register', formData);
-      setMessage('¡Registro exitoso! Ahora puedes iniciar sesión.');
+      setMessage('Solicitud de registro enviada. Redirigiendo...');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setMessage(err.response?.data?.message || 'Algo salió mal.');
+      setMessage(err.response?.data?.message || 'Error en la solicitud.');
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg border border-gray-700">
-        <h2 className="text-3xl font-bold text-center text-white">Crear Cuenta</h2>
-        <form className="space-y-6" onSubmit={onSubmit}>
-          <div className="flex space-x-4">
-            <input name="firstName" type="text" value={firstName} onChange={onChange} required className="w-1/2 px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nombre" />
-            <input name="lastName" type="text" value={lastName} onChange={onChange} required className="w-1/2 px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Apellido" />
-          </div>
-          <input name="email" type="email" value={email} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Correo electrónico" />
-          <input name="password" type="password" value={password} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contraseña" />
-          <div>
-            <button type="submit" className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-              Registrarse
-            </button>
-          </div>
-        </form>
-        {message && <p className={`mt-4 text-center text-sm ${message.includes('exitoso') ? 'text-green-400' : 'text-red-400'}`}>{message}</p>}
-
-        {/* ENLACE A LOGIN */}
-        <p className="mt-6 text-center text-sm text-gray-400">
-          ¿Ya tienes una cuenta?{' '}
-          <Link to="/login" className="font-medium text-blue-400 hover:underline">
-            Inicia sesión
-          </Link>
-        </p>
+    <div className="min-h-screen flex flex-col justify-center items-center p-4">
+      <div className="max-w-md w-full mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-futuristic-text-primary">Helpdesk</h1>
+          <p className="text-futuristic-text-secondary text-lg">Plataforma de Gemelo Digital</p>
+        </div>
+        <div className="glass-card p-8">
+          <h2 className="text-2xl font-bold text-center text-futuristic-secondary mb-6">[ Solicitar Acceso ]</h2>
+          <form className="space-y-4" onSubmit={onSubmit}>
+            <div className="flex space-x-4">
+              <div className="w-1/2">
+                <label htmlFor="firstName" className="block text-sm font-medium text-futuristic-text-secondary">Nombre</label>
+                <input id="firstName" name="firstName" type="text" value={firstName} onChange={onChange} required className="mt-1 block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm" placeholder="Nombre" />
+              </div>
+              <div className="w-1/2">
+                <label htmlFor="lastName" className="block text-sm font-medium text-futuristic-text-secondary">Apellido</label>
+                <input id="lastName" name="lastName" type="text" value={lastName} onChange={onChange} required className="mt-1 block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm" placeholder="Apellido" />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-futuristic-text-secondary">Correo Corporativo</label>
+              <input id="email" name="email" type="email" value={email} onChange={onChange} required className="mt-1 block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm" placeholder="usuario@maflow.com" />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-futuristic-text-secondary">Crear Clave de Acceso</label>
+              <input id="password" name="password" type="password" value={password} onChange={onChange} required className="mt-1 block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm" placeholder="••••••••" />
+            </div>
+            <div>
+              <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold uppercase tracking-wider text-white bg-futuristic-primary hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-futuristic-primary transition-all duration-300 transform hover:scale-105 hover:shadow-neon-red">
+                Enviar Solicitud
+              </button>
+            </div>
+          </form>
+          {message && <p className={`mt-4 text-center text-sm ${message.includes('exitosa') ? 'text-futuristic-secondary' : 'text-futuristic-primary'}`}>{message}</p>}
+          <p className="mt-6 text-center text-sm text-futuristic-text-secondary">
+            ¿Ya tienes credenciales?{' '}
+            <Link to="/login" className="font-medium text-futuristic-secondary hover:underline">
+              Inicia sesión aquí
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

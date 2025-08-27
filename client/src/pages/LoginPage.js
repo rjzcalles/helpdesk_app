@@ -15,35 +15,46 @@ const LoginPage = () => {
     try {
       const res = await axios.post('/api/users/login', formData);
       localStorage.setItem('token', res.data.token);
-      setMessage('Inicio de sesión exitoso. Redirigiendo...');
-      setTimeout(() => navigate('/dashboard'), 1000);
+      setMessage('Acceso concedido. Inicializando interfaz...');
+      setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err) {
-      setMessage(err.response?.data?.message || 'Algo salió mal.');
+      setMessage(err.response?.data?.message || 'Credenciales incorrectas.');
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg border border-gray-700">
-        <h2 className="text-3xl font-bold text-center text-white">Iniciar Sesión</h2>
-        <form className="space-y-6" onSubmit={onSubmit}>
-          <input name="email" type="email" value={email} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Correo electrónico" />
-          <input name="password" type="password" value={password} onChange={onChange} required className="w-full px-4 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contraseña" />
-          <div>
-            <button type="submit" className="w-full px-4 py-2 font-semibold text-white bg-blue-900 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-              Entrar
-            </button>
-          </div>
-        </form>
-        {message && <p className={`mt-4 text-center text-sm ${message.includes('exitoso') ? 'text-green-400' : 'text-red-400'}`}>{message}</p>}
-        
-        {/* ENLACE A REGISTRO */}
-        <p className="mt-6 text-center text-sm text-gray-400">
-          ¿No tienes una cuenta?{' '}
-          <Link to="/register" className="font-medium text-blue-400 hover:underline">
-            Crea una aquí
-          </Link>
-        </p>
+    <div className="min-h-screen flex flex-col justify-center items-center p-4">
+      <div className="max-w-md w-full mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-futuristic-text-primary">Helpdesk</h1>
+          <p className="text-futuristic-text-secondary text-lg">Plataforma de Gemelo Digital</p>
+        </div>
+        <div className="glass-card p-8">
+          <h2 className="text-2xl font-bold text-center text-futuristic-secondary mb-6">[ Iniciar Sesión ]</h2>
+          <form className="space-y-6" onSubmit={onSubmit}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-futuristic-text-secondary">Identificador de Usuario</label>
+              <input id="email" name="email" type="email" value={email} onChange={onChange} required className="mt-1 block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm" placeholder="usuario@maflow.com" />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-futuristic-text-secondary">Clave de Acceso</label>
+              <input id="password" name="password" type="password" value={password} onChange={onChange} required className="mt-1 block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm" placeholder="••••••••" />
+            </div>
+            <div>
+              <button type="submit" 
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold uppercase tracking-wider text-white bg-futuristic-primary hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-futuristic-primary transition-all duration-300 transform hover:scale-105 hover:shadow-neon-red">
+                Conectar
+              </button>
+            </div>
+          </form>
+          {message && <p className={`mt-4 text-center text-sm ${message.includes('concedido') ? 'text-futuristic-secondary' : 'text-futuristic-primary'}`}>{message}</p>}
+          <p className="mt-6 text-center text-sm text-futuristic-text-secondary">
+            ¿No tienes credenciales? {' '}
+            <Link to="/register" className="font-medium text-futuristic-secondary hover:underline">
+              Solicita acceso aquí
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

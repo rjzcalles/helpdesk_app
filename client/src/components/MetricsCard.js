@@ -1,12 +1,49 @@
-// client/src/components/MetricsCard.js
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { animate } from 'framer-motion';
 
-const MetricsCard = ({ title, value, colorClass }) => {
+const colorMap = {
+  red: 'text-futuristic-primary',
+  yellow: 'text-yellow-400',
+  cyan: 'text-futuristic-secondary',
+  default: 'text-futuristic-text-primary',
+};
+
+const shadowMap = {
+    red: 'hover:shadow-neon-red',
+    cyan: 'hover:shadow-neon-cyan',
+    default: 'hover:shadow-neon-cyan',
+}
+
+const Counter = ({ from = 0, to }) => {
+    const nodeRef = useRef();
+  
+    useEffect(() => {
+      const node = nodeRef.current;
+  
+      const controls = animate(from, to, {
+        duration: 1.5,
+        onUpdate(value) {
+          node.textContent = Math.round(value).toString();
+        }
+      });
+  
+      return () => controls.stop();
+    }, [from, to]);
+  
+    return <span ref={nodeRef} />;
+}
+
+const MetricsCard = ({ title, value, color = 'default', delay = '0s' }) => {
+  const colorClass = colorMap[color] || colorMap.default;
+  const shadowClass = shadowMap[color] || shadowMap.default;
+
   return (
-    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-      <h3 className="text-sm font-medium text-gray-400">{title}</h3>
-      <p className={`text-4xl font-bold mt-2 ${colorClass}`}>
-        {value}
+    <div 
+        className={`glass-card p-5 flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 ${shadowClass} animate-fade-in-up`}
+        style={{ animationDelay: delay }}>
+      <h3 className="text-md font-semibold text-futuristic-text-secondary truncate">{title}</h3>
+      <p className={`text-5xl font-bold mt-2 ${colorClass}`}>
+        <Counter to={value} />
       </p>
     </div>
   );
