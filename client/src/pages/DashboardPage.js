@@ -126,7 +126,6 @@ const DashboardPage = () => {
             <MetricsCard title="Sistemas Estables" value={metrics.closed} color="cyan" delay="500ms" />
           </div>
         )}
-
         <main
           className={
             role === 'user'

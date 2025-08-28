@@ -34,15 +34,15 @@ const HomePage = () => (
       <p className="mt-4 text-lg text-futuristic-text-secondary">
         Plataforma de Soporte para el Gemelo Digital
       </p>
-      <div className="mt-8 space-x-6">
+      <div className="mt-8 flex flex-col items-center gap-4 w-full">
         <Link 
           to="/login" 
-          className="px-8 py-3 font-bold uppercase tracking-wider text-white bg-futuristic-primary rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 hover:shadow-neon-red">
+          className="px-8 py-3 font-bold uppercase tracking-wider text-white bg-futuristic-primary rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 hover:shadow-neon-red w-4/5 max-w-xs text-center">
           Iniciar Sesión
         </Link>
         <Link 
           to="/register" 
-          className="px-8 py-3 font-bold uppercase tracking-wider text-futuristic-secondary border-2 border-futuristic-secondary rounded-lg hover:bg-futuristic-secondary hover:text-futuristic-background transition-all duration-300 transform hover:scale-105 hover:shadow-neon-cyan">
+          className="px-8 py-3 font-bold uppercase tracking-wider text-futuristic-secondary border-2 border-futuristic-secondary rounded-lg hover:bg-futuristic-secondary hover:text-futuristic-background transition-all duration-300 transform hover:scale-105 hover:shadow-neon-cyan w-4/5 max-w-xs text-center">
           Registrarse
         </Link>
       </div>

@@ -101,7 +101,7 @@ exports.createIncident = async (req, res) => {
     // Enviar correo a ambos destinatarios
     transporter.sendMail({
       from: process.env.SMTP_USER,
-      to: ['marcosgomezpalazuelo1@gmail.com', 'rodrigo@gmail.com'],
+      to: ['marcosgomezpalazuelo1@gmail.com', 'rodrigo.zaldana@netbees.es'],
       subject: `Nueva incidencia creada: ${title}`,
       text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}`
     }, (err, info) => {
