@@ -77,18 +77,29 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
 
 // --- Configuración de Áreas y Colores ---
 const areaConfig = {
-    'zona-fresado': { position: new THREE.Vector3(-47, 18, 10), label: 'Zona de Fresado' },
-    'control-calidad': { position: new THREE.Vector3(-48, -103, 10), label: 'Control de Calidad' },
+    'Nissan/Renault': { position: new THREE.Vector3(-47, 18, 10), label: 'Nissan/Renault' },
+    'Oficinas': { position: new THREE.Vector3(-48, -103, 10), label: 'Oficinas' },
     'netbees': { position: new THREE.Vector3(-115, -107, 10), label: 'Netbees' },
-    'oficinas': { position: new THREE.Vector3(-100, -80, 10), label: 'Oficinas' },
+    '3D': { position: new THREE.Vector3(40, -103, 10), label: '3D' },
     'racores': { position: new THREE.Vector3(-115, 60, 10), label: 'Racores' },
-    'linea-ensamblaje-1': { position: new THREE.Vector3(40, -20, 10), label: 'Línea Ensamblaje 1' },
-    'zona-soldadura': { position: new THREE.Vector3(10, 80, 10), label: 'Zona Soldadura' },
+    'PS': { position: new THREE.Vector3(-26, -14, 10), label: 'PS' },
+    'Hidroalcohol': { position: new THREE.Vector3(4, -103, 10), label: 'Hidroalcohol' },
+    'Recepción': { position: new THREE.Vector3(56, -103, 10), label: 'Recepción' },
+    'PD': { position: new THREE.Vector3(4, -20, 10), label: 'PD' },
+    'Crippas y Bancos': { position: new THREE.Vector3(-20, -50, 10), label: 'Crippas y Bancos' },
+    'PL Backup': { position: new THREE.Vector3(-12, -76, 10), label: 'PL Backup' },
+    'Laboratorio Calidad': { position: new THREE.Vector3(24, -103, 10), label: 'Laboratorio Calidad' },
+    'Borygo': { position: new THREE.Vector3(103, -80, 10), label: 'Borygo' },
+    'LEF': { position: new THREE.Vector3(24, -62, 10), label: 'LEF' },
+    'Metacrilatos': { position: new THREE.Vector3(-115, -40, 10), label: 'Metacrilatos' },
+    'MTO': { position: new THREE.Vector3(-47, 43, 10), label: 'MTO' },
+    'Calidad': { position: new THREE.Vector3(-20, 18, 10), label: 'Calidad' },
 };
 
 const getColorByCount = (count) => {
-  if (count >= 3) return '#ff4757'; // futuristic-primary
-  if (count >= 1) return '#f59e0b'; // amber-500
+  if (count >= 3) return '#df0000'; // futuristic-primary
+  if (count === 2) return '#ff5900'; // orange-600
+  if (count === 1) return '#f59e0b'; // amber-500
   return '#00f5d4'; // futuristic-secondary
 };
 
@@ -125,7 +136,7 @@ const TicketVisualization = ({ incidents }) => {
   return (
     <div className="w-full h-full">
       <div className="w-full h-[500px] lg:h-[600px] rounded-lg bg-futuristic-background border-2 border-futuristic-border/30 overflow-hidden relative">
-        <Canvas orthographic camera={{ position: [0, 0, 100], zoom: 5 }}>
+        <Canvas orthographic camera={{ position: [0, 0, 100], zoom: 2 }}>
           <ambientLight intensity={0.5} />
           <directionalLight position={[10, 20, 30]} intensity={1} />
           <Center>

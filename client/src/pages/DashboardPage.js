@@ -22,21 +22,32 @@ const getAuthInfo = () => {
 };
 
 const factoryAreas = [
-  { id: 'zona-fresado', name: 'Zona de Fresado' },
-  { id: 'linea-ensamblaje-1', name: 'Línea de Ensamblaje 1' },
-  { id: 'zona-soldadura', name: 'Zona de Soldadura' },
-  { id: 'control-calidad', name: 'Control de Calidad' },
+  { id: 'Nissan/Renault', name: 'Nissan/Renault' },
+  { id: 'PS', name: 'PS' },
+  { id: 'Hidroalcohol', name: 'Hidroalcohol' },
+  { id: 'Oficinas', name: 'Oficinas' },
   { id: 'netbees', name: 'Área de Netbees' },
-  { id: 'oficinas', name: 'Oficinas' },
+  { id: '3D', name: '3D' },
   { id: 'racores', name: 'Área de Racores' },
+  { id: 'Recepción', name: 'Recepción' },
+  { id: 'PD', name: 'PD' },
+  { id: 'Crippas y Bancos', name: 'Crippas y Bancos' },
+  { id: 'PL Backup', name: 'PL Backup' },
+  { id: 'Laboratorio Calidad', name: 'Laboratorio Calidad' },
+  { id: 'Borygo', name: 'Borygo' },
+  { id: 'LEF', name: 'LEF' },
+  { id: 'Metacrilatos', name: 'Metacrilatos' },
+  { id: 'MTO', name: 'MTO' },
+  { id: 'Calidad', name: 'Calidad' },
 ];
 
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [incidents, setIncidents] = useState([]);
   const [formData, setFormData] = useState({ title: '', description: '', area: '' });
-  
-  const { role } = useMemo(() => getAuthInfo(), []);
+
+  // Obtener rol e id del usuario autenticado
+  const { role, id } = useMemo(() => getAuthInfo(), []);
 
   useEffect(() => {
     if (!role) {
@@ -81,11 +92,16 @@ const DashboardPage = () => {
     }
   };
 
+  // Filtrar incidencias si el usuario es 'user'
+  const visibleIncidents = role === 'user'
+    ? incidents.filter(inc => inc.userId === id)
+    : incidents;
+
   const metrics = {
-    total: incidents.length,
-    open: incidents.filter(inc => inc.status === 'abierto').length,
-    inProgress: incidents.filter(inc => inc.status === 'en-progreso').length,
-    closed: incidents.filter(inc => inc.status === 'cerrado').length,
+    total: visibleIncidents.length,
+    open: visibleIncidents.filter(inc => inc.status === 'abierto').length,
+    inProgress: visibleIncidents.filter(inc => inc.status === 'en-progreso').length,
+    closed: visibleIncidents.filter(inc => inc.status === 'cerrado').length,
   };
 
   return (
@@ -101,23 +117,46 @@ const DashboardPage = () => {
           </button>
         </header>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <MetricsCard title="Señales Totales" value={metrics.total} delay="200ms" />
-          <MetricsCard title="Alertas Activas" value={metrics.open} color="red" delay="300ms" />
-          <MetricsCard title="En Observación" value={metrics.inProgress} color="yellow" delay="400ms" />
-          <MetricsCard title="Sistemas Estables" value={metrics.closed} color="cyan" delay="500ms" />
-        </div>
-
-        <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1 space-y-8 animate-fade-in-up" style={{animationDelay: '600ms'}}>
-            <CreateIncidentForm {...{ formData, onChange, onSubmit, factoryAreas }} />
-            <IncidentList incidents={incidents} title="Registro de Actividad" />
+        {/* Solo mostrar métricas si no es user */}
+        {role !== 'user' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <MetricsCard title="Señales Totales" value={metrics.total} delay="200ms" />
+            <MetricsCard title="Alertas Activas" value={metrics.open} color="red" delay="300ms" />
+            <MetricsCard title="En Observación" value={metrics.inProgress} color="yellow" delay="400ms" />
+            <MetricsCard title="Sistemas Estables" value={metrics.closed} color="cyan" delay="500ms" />
           </div>
+        )}
 
-          <div className="lg:col-span-2 glass-card p-6 min-h-[400px] lg:min-h-0 animate-fade-in-up" style={{animationDelay: '700ms'}}>
-             <h2 className="text-2xl font-bold mb-4 text-futuristic-secondary">[ Mapa de Planta ]</h2>
-            <TicketVisualization incidents={incidents} />
-          </div>
+        <main
+          className={
+            role === 'user'
+              ? "dashboard-user-main"
+              : "grid grid-cols-1 lg:grid-cols-3 gap-8"
+          }
+        >
+          {role === 'user' ? (
+            <>
+              <div className="dashboard-user-panel">
+                <CreateIncidentForm {...{ formData, onChange, onSubmit, factoryAreas }} />
+              </div>
+              <div className="dashboard-user-panel">
+                <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
+              </div>
+            </>
+          ) : (
+            <div className="lg:col-span-1 space-y-8 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+              <CreateIncidentForm {...{ formData, onChange, onSubmit, factoryAreas }} />
+              <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
+            </div>
+          )}
+
+          {/* Solo mostrar el mapa si no es user */}
+          {role !== 'user' && (
+            <div className="lg:col-span-2 glass-card p-6 min-h-[400px] lg:min-h-0 animate-fade-in-up" style={{ animationDelay: '700ms' }}>
+              <h2 className="text-2xl font-bold mb-4 text-futuristic-secondary">[ Mapa de Planta ]</h2>
+              <TicketVisualization incidents={visibleIncidents} />
+            </div>
+          )}
         </main>
       </div>
     </div>
@@ -149,5 +188,4 @@ const CreateIncidentForm = ({ formData, onChange, onSubmit, factoryAreas }) => (
     </form>
   </div>
 );
-
 export default DashboardPage;

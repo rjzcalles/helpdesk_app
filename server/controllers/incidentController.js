@@ -1,18 +1,18 @@
 const { Incident, User } = require('../models');
+const transporter = require('../config/mailer');
 
 // Obtener todas las incidencias (admin)
 exports.getAllIncidents = async (req, res) => {
   try {
-    const incidents = await Incident.findAll({
-      include: [{
-        model: User,
-        attributes: ['firstName', 'email']
-      }],
-      order: [['createdAt', 'DESC']]
-    });
-    res.status(200).json(incidents);
+    let incidents;
+    if (req.user.role === 'user') {
+      incidents = await Incident.findAll({ where: { userId: req.user.id }, order: [['createdAt', 'DESC']] });
+    } else {
+      incidents = await Incident.findAll({ order: [['createdAt', 'DESC']] });
+    }
+    res.json(incidents);
   } catch (error) {
-    res.status(500).json({ message: 'Error del servidor.' });
+    res.status(500).json({ error: 'Error al obtener incidencias' });
   }
 };
 
@@ -90,32 +90,33 @@ exports.updateIncidentStatus = async (req, res) => {
 exports.createIncident = async (req, res) => {
   try {
     const { title, description, area } = req.body;
-    const userId = req.user.id;
-
-    const newIncident = await Incident.create({
+    const incident = await Incident.create({
       title,
       description,
-      status: 'abierto',
-      userId,
       area,
+      userId: req.user.id,
+      status: 'abierto'
     });
 
-    // Buscar el usuario para incluir sus datos en el emit
-    const user = await User.findByPk(userId, {
-      attributes: ['firstName', 'email']
+    // Enviar correo a ambos destinatarios
+    transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: ['marcosgomezpalazuelo1@gmail.com', 'rodrigo@gmail.com'],
+      subject: `Nueva incidencia creada: ${title}`,
+      text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}`
+    }, (err, info) => {
+      if (err) {
+        console.error('Error enviando correo:', err);
+      } else {
+        console.log('Correo enviado:', info.response);
+      }
     });
 
-    const incidentWithOwner = {
-      ...newIncident.toJSON(),
-      User: user
-    };
+    req.io?.emit('incident_created', incident);
 
-    req.io?.emit('incident_created', incidentWithOwner);
-
-    res.status(201).json(incidentWithOwner);
+    res.status(201).json(incident);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al crear la incidencia.' });
+    res.status(500).json({ error: 'Error al crear la incidencia' });
   }
 };
 
