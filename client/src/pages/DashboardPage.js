@@ -57,8 +57,11 @@ const DashboardPage = () => {
 
     const fetchIncidents = async () => {
       try {
-        const data = await incidentService.getAllIncidents();
-        setIncidents(data);
+        // CAMBIO: pasa el rol para usar el endpoint correcto
+        const data = await incidentService.getIncidents(role);
+        // Ordena las incidencias de más recientes a más antiguas
+        const sorted = [...data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setIncidents(sorted);
       } catch (error) {
         if (error.response?.status === 401) handleLogout();
       }
@@ -66,8 +69,8 @@ const DashboardPage = () => {
 
     fetchIncidents();
 
-    socket.on('incident_created', (newIncident) => setIncidents(prev => [newIncident, ...prev]));
-    socket.on('incident_updated', (updatedIncident) => setIncidents(prev => prev.map(inc => inc.id === updatedIncident.id ? updatedIncident : inc)));
+    socket.on('incident_created', (newIncident) => setIncidents(prev => [newIncident, ...prev].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))));
+    socket.on('incident_updated', (updatedIncident) => setIncidents(prev => prev.map(inc => inc.id === updatedIncident.id ? updatedIncident : inc).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))));
 
     return () => {
       socket.off('incident_created');
@@ -92,17 +95,18 @@ const DashboardPage = () => {
     }
   };
 
-  // Filtrar incidencias si el usuario es 'user'
-  const visibleIncidents = role === 'user'
-    ? incidents.filter(inc => inc.userId === id)
-    : incidents;
+  // Ya no es necesario filtrar en el frontend, el backend lo hace
+  // Filtra incidencias para ocultar las cerradas
+  const visibleIncidents = incidents.filter(inc => inc.status !== 'cerrado');
 
-  const metrics = {
-    total: visibleIncidents.length,
-    open: visibleIncidents.filter(inc => inc.status === 'abierto').length,
-    inProgress: visibleIncidents.filter(inc => inc.status === 'en-progreso').length,
-    closed: visibleIncidents.filter(inc => inc.status === 'cerrado').length,
-  };
+// ...existing code...
+
+const metrics = {
+  total: incidents.length,
+  open: incidents.filter(inc => inc.status === 'abierto').length,
+  inProgress: incidents.filter(inc => inc.status === 'en-progreso').length,
+  closed: incidents.filter(inc => inc.status === 'cerrado').length, // sistemas estables
+};
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8">
@@ -186,5 +190,6 @@ const CreateIncidentForm = ({ formData, onChange, onSubmit, factoryAreas }) => (
       </button>
     </form>
   </div>
-);
+);  
+
 export default DashboardPage;

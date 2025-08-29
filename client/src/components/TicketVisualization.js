@@ -65,7 +65,6 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
           </select>
         </div>
         <div className="flex justify-end mt-6 space-x-3">
-          <button onClick={() => onDelete(incident.id)} disabled={saving} className="px-4 py-2 bg-futuristic-text-secondary/50 text-futuristic-text-primary rounded-lg hover:bg-futuristic-text-secondary/70 transition-colors">Marcar como Resuelta</button>
           <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-futuristic-primary text-white font-semibold rounded-lg hover:bg-red-700 transition-colors hover:shadow-neon-red">
             {saving ? 'Guardando...' : 'Guardar Cambios'}
           </button>

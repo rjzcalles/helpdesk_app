@@ -6,9 +6,14 @@ exports.getAllIncidents = async (req, res) => {
   try {
     let incidents;
     if (req.user.role === 'user') {
-      incidents = await Incident.findAll({ where: { userId: req.user.id }, order: [['createdAt', 'DESC']] });
+      incidents = await Incident.findAll({
+        where: { userId: req.user.id },
+        order: [['createdAt', 'DESC']]
+      });
     } else {
-      incidents = await Incident.findAll({ order: [['createdAt', 'DESC']] });
+      incidents = await Incident.findAll({
+        order: [['createdAt', 'DESC']]
+      });
     }
     res.json(incidents);
   } catch (error) {
@@ -20,16 +25,31 @@ exports.getAllIncidents = async (req, res) => {
 exports.updateStatus = async (req, res) => {
   try {
     const { status, asignado } = req.body;
-    const incident = await Incident.findByPk(req.params.id);
+    const incident = await Incident.findByPk(req.params.id, { include: User });
     if (!incident) return res.status(404).json({ error: 'No encontrado' });
     if (typeof status !== 'undefined') incident.status = status;
     if (typeof asignado !== 'undefined') incident.asignado = asignado;
     await incident.save();
-    res.json({
-      status: incident.status,
-      asignado: incident.asignado,
-      updatedAt: incident.updatedAt
-    });
+
+    // Enviar correo si el estado es "cerrado"
+    if (status === 'cerrado' && incident.User?.email) {
+      transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: incident.User.email,
+        subject: `Tu incidencia ha sido cerrada`,
+        text: `La incidencia "${incident.title}" en el área "${incident.area}" ha sido cerrada.`
+      }, (err, info) => {
+        if (err) {
+          console.error('Error enviando correo:', err);
+        } else {
+          console.log('Correo enviado:', info.response);
+        }
+      });
+    }
+
+    req.io?.emit('incident_updated', incident);
+
+    res.json(incident);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Error actualizando estado' });
@@ -101,7 +121,7 @@ exports.createIncident = async (req, res) => {
     // Enviar correo a ambos destinatarios
     transporter.sendMail({
       from: process.env.SMTP_USER,
-      to: ['marcosgomezpalazuelo1@gmail.com', 'rodrigo.zaldana@netbees.es'],
+      to: ['marcosgomezpalazuelo1@gmail.com', 'zaldana@netbees.es'],
       subject: `Nueva incidencia creada: ${title}`,
       text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}`
     }, (err, info) => {

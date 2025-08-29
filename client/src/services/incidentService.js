@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = '/api/incidents/';
+const API_URL_ALL = '/api/incidents/all';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -24,20 +25,21 @@ const deleteIncident = async (incidentId) => {
   return response.data;
 };
 
-const getIncidents = async () => {
+// CAMBIO: recibe el rol y llama al endpoint correcto
+const getIncidents = async (role) => {
   const config = {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
   };
-  const response = await axios.get(API_URL, config);
+  const url = role === 'admin' ? API_URL_ALL : API_URL;
+  const response = await axios.get(url, config);
   return response.data;
 };
 
 const getAllIncidents = async () => {
   const config = {
     headers: {
-      // Esta línea es crucial
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   };
@@ -73,5 +75,5 @@ const updateAsignado = async (incidentId, asignado) => {
   return response.data;
 };
 
-const incidentService = { createIncident, getIncidents, getAllIncidents, updateIncidentStatus, updateStatus, updateAsignado, deleteIncident};
+const incidentService = { createIncident, getIncidents, getAllIncidents, updateIncidentStatus, updateStatus, updateAsignado, deleteIncident };
 export default incidentService;

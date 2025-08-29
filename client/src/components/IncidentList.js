@@ -36,7 +36,6 @@ const IncidentList = ({ incidents, title }) => {
           <option value="todos">Todos</option>
           <option value="abierto">Abierto</option>
           <option value="en-progreso">En Progreso</option>
-          <option value="cerrado">Cerrado</option>
         </select>
       </div>
       <div className="overflow-y-auto flex-grow h-[calc(100vh-600px)] min-h-[300px] pr-2">
