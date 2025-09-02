@@ -43,6 +43,19 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
     setSaving(false);
   };
 
+  const imageUrl = incident.image_url || incident.imageUrl;
+  const backendUrl = 'http://localhost:5001';
+
+  // NUEVO: función para abrir la imagen en una ventana aparte
+const handleOpenImageWindow = () => {
+  if (!imageUrl) return;
+  const url =
+    imageUrl.startsWith('/')
+      ? `http://localhost:5001/${imageUrl.replace(/\\/g, '/')}`
+      : `http://localhost:5001/${imageUrl}`;
+  window.open(url, '_blank', 'noopener,noreferrer,width=800,height=600');
+};
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
       <div className="glass-card p-6 w-full max-w-lg animate-fade-in-up" onClick={e => e.stopPropagation()}>
@@ -55,6 +68,32 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
           <p><strong className="text-futuristic-text-secondary w-28 inline-block">Área:</strong> {areaLabel}</p>
           <p><strong className="text-futuristic-text-secondary w-28 inline-block">Creado:</strong> {new Date(incident.createdAt).toLocaleString()}</p>
           <p><strong className="text-futuristic-text-secondary w-28 inline-block">Descripción:</strong> {incident.description}</p>
+          {imageUrl && (
+            <div className="mt-3">
+              <strong className="text-futuristic-text-secondary w-28 inline-block">Imagen:</strong>
+              <img
+                src={
+                  imageUrl
+                    ? `${backendUrl}/${imageUrl.startsWith('/') ? imageUrl.replace(/\\/g, '/') : '' + imageUrl}`
+                    : ''
+                }
+                alt="Incidencia"
+                className="mt-2 rounded shadow border border-futuristic-border cursor-pointer"
+                style={{
+                  maxHeight: '300px',
+                  maxWidth: '100%',
+                  width: 'auto',
+                  height: 'auto',
+                  objectFit: 'contain',
+                  background: '#fff',
+                  display: 'block',
+                  margin: '0 auto'
+                }}
+                onClick={handleOpenImageWindow}
+                title="Abrir imagen en ventana aparte"
+              />
+            </div>
+          )}
         </div>
         <div className="mt-6 border-t border-futuristic-border pt-4">
           <label className="font-semibold text-futuristic-text-secondary block mb-2">Actualizar Estado</label>
@@ -166,7 +205,7 @@ const TicketVisualization = ({ incidents }) => {
             {(incidentsByArea[selectedArea] || []).map(inc => (
               <li key={inc.id} className="text-sm flex justify-between items-center bg-futuristic-background/70 p-2 rounded-md border border-futuristic-border/50">
                 <span className="text-futuristic-text-primary font-medium">{inc.title}</span>
-                <button onClick={() => setModalIncident(inc)} className="text-xs text-futuristic-secondary font-semibold hover:underline">Ver detalles</button>
+                <button onClick={() => setModalIncident(inc)}  className="text-xs text-futuristic-secondary font-semibold hover:underline">Ver detalles</button>
               </li>
             ))}
           </ul>
@@ -177,6 +216,7 @@ const TicketVisualization = ({ incidents }) => {
         <IncidentModal
           incident={modalIncident}
           areaLabel={areaConfig[modalIncident.area]?.label || modalIncident.area}
+          imageUrl={modalIncident.imageUrl}
           onClose={() => setModalIncident(null)}
           onStatusChange={handleStatusChange}
           onDelete={handleDeleteIncident}

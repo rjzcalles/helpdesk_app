@@ -16,15 +16,12 @@ module.exports = (sequelize, DataTypes) => {
     area: DataTypes.STRING,
     locationX: DataTypes.FLOAT,
     locationY: DataTypes.FLOAT,
-    asignado: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      allowNull: false,
-    },
+    image_url: DataTypes.STRING,
+    asignado: DataTypes.STRING,
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    }
+    },
   }, {
     sequelize,
     modelName: 'Incident',

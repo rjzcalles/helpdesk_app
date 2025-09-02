@@ -45,6 +45,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [incidents, setIncidents] = useState([]);
   const [formData, setFormData] = useState({ title: '', description: '', area: '' });
+  const [image, setImage] = useState(null);
 
   // Obtener rol e id del usuario autenticado
   const { role, id } = useMemo(() => getAuthInfo(), []);
@@ -57,9 +58,7 @@ const DashboardPage = () => {
 
     const fetchIncidents = async () => {
       try {
-        // CAMBIO: pasa el rol para usar el endpoint correcto
         const data = await incidentService.getIncidents(role);
-        // Ordena las incidencias de más recientes a más antiguas
         const sorted = [...data].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setIncidents(sorted);
       } catch (error) {
@@ -69,8 +68,15 @@ const DashboardPage = () => {
 
     fetchIncidents();
 
-    socket.on('incident_created', (newIncident) => setIncidents(prev => [newIncident, ...prev].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))));
-    socket.on('incident_updated', (updatedIncident) => setIncidents(prev => prev.map(inc => inc.id === updatedIncident.id ? updatedIncident : inc).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))));
+    socket.on('incident_created', (newIncident) =>
+      setIncidents(prev => [newIncident, ...prev].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)))
+    );
+    socket.on('incident_updated', (updatedIncident) =>
+      setIncidents(prev =>
+        prev.map(inc => inc.id === updatedIncident.id ? updatedIncident : inc)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      )
+    );
 
     return () => {
       socket.off('incident_created');
@@ -85,35 +91,49 @@ const DashboardPage = () => {
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  const onPasteImage = (e) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        setImage(file);
+        break;
+      }
+    }
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      await incidentService.createIncident(formData);
+      const data = new FormData();
+      data.append('title', formData.title);
+      data.append('description', formData.description);
+      data.append('area', formData.area);
+      if (image) data.append('image', image);
+
+      await incidentService.createIncidentWithImage(data);
       setFormData({ title: '', description: '', area: '' });
+      setImage(null);
     } catch (error) {
       console.error('Error al crear la incidencia', error);
     }
   };
 
-  // Ya no es necesario filtrar en el frontend, el backend lo hace
-  // Filtra incidencias para ocultar las cerradas
   const visibleIncidents = incidents.filter(inc => inc.status !== 'cerrado');
 
-// ...existing code...
-
-const metrics = {
-  total: incidents.length,
-  open: incidents.filter(inc => inc.status === 'abierto').length,
-  inProgress: incidents.filter(inc => inc.status === 'en-progreso').length,
-  closed: incidents.filter(inc => inc.status === 'cerrado').length, // sistemas estables
-};
+  const metrics = {
+    total: incidents.length,
+    open: incidents.filter(inc => inc.status === 'abierto').length,
+    inProgress: incidents.filter(inc => inc.status === 'en-progreso').length,
+    closed: incidents.filter(inc => inc.status === 'cerrado').length,
+  };
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-screen-2xl mx-auto">
-        <header className="flex justify-between items-center mb-8 animate-fade-in-up" style={{animationDelay: '100ms'}}>
+        <header className="flex justify-between items-center mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <div>
-            <h1 className="text-3xl font-bold text-futuristic-text-primary">Digital Twin Interface</h1>
+            <h1 className="text-3xl font-bold text-futuristic-text-primary">Help Desk Interface</h1>
             <p className="text-futuristic-text-secondary">Estado de la planta en tiempo real</p>
           </div>
           <button onClick={handleLogout} className="bg-futuristic-primary/80 text-white font-semibold px-4 py-2 rounded-lg hover:bg-futuristic-primary transition-all duration-300 hover:shadow-neon-red">
@@ -121,7 +141,6 @@ const metrics = {
           </button>
         </header>
 
-        {/* Solo mostrar métricas si no es user */}
         {role !== 'user' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <MetricsCard title="Señales Totales" value={metrics.total} delay="200ms" />
@@ -140,7 +159,14 @@ const metrics = {
           {role === 'user' ? (
             <>
               <div className="dashboard-user-panel">
-                <CreateIncidentForm {...{ formData, onChange, onSubmit, factoryAreas }} />
+                <CreateIncidentForm
+                  formData={formData}
+                  onChange={onChange}
+                  onSubmit={onSubmit}
+                  factoryAreas={factoryAreas}
+                  image={image}
+                  onPasteImage={onPasteImage}
+                />
               </div>
               <div className="dashboard-user-panel">
                 <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
@@ -148,12 +174,18 @@ const metrics = {
             </>
           ) : (
             <div className="lg:col-span-1 space-y-8 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-              <CreateIncidentForm {...{ formData, onChange, onSubmit, factoryAreas }} />
+              <CreateIncidentForm
+                formData={formData}
+                onChange={onChange}
+                onSubmit={onSubmit}
+                factoryAreas={factoryAreas}
+                image={image}
+                onPasteImage={onPasteImage}
+              />
               <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
             </div>
           )}
 
-          {/* Solo mostrar el mapa si no es user */}
           {role !== 'user' && (
             <div className="lg:col-span-2 glass-card p-6 min-h-[400px] lg:min-h-0 animate-fade-in-up" style={{ animationDelay: '700ms' }}>
               <h2 className="text-2xl font-bold mb-4 text-futuristic-secondary">[ Mapa de Planta ]</h2>
@@ -166,7 +198,7 @@ const metrics = {
   );
 };
 
-const CreateIncidentForm = ({ formData, onChange, onSubmit, factoryAreas }) => (
+const CreateIncidentForm = ({ formData, onChange, onSubmit, factoryAreas, image, onPasteImage }) => (
   <div className="glass-card p-6">
     <h2 className="text-2xl font-bold mb-4 text-futuristic-secondary">[ Nueva Alerta ]</h2>
     <form onSubmit={onSubmit} className="space-y-4">
@@ -185,11 +217,29 @@ const CreateIncidentForm = ({ formData, onChange, onSubmit, factoryAreas }) => (
         <label className="block text-sm font-medium text-futuristic-text-secondary mb-1">Informe Detallado</label>
         <textarea name="description" value={formData.description} onChange={onChange} placeholder="Detalles técnicos de la alerta..." required className="block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm" rows="4"></textarea>
       </div>
+      <div>
+        <label className="block text-sm font-medium text-futuristic-text-secondary mb-1">Imagen (solo pegar)</label>
+        <div
+          contentEditable={true}
+          onPaste={onPasteImage}
+          className="border border-dashed border-futuristic-text-secondary/50 rounded-md p-4 bg-futuristic-background-light"
+          style={{
+            minHeight: '60px',
+            maxHeight: '80px',
+            overflow: 'hidden',
+            outline: 'none',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+          suppressContentEditableWarning={true}
+        >
+        </div>
+      </div>
       <button type="submit" className="w-full bg-futuristic-primary/90 text-white font-bold py-3 rounded-lg hover:bg-futuristic-primary transition-all duration-300 transform hover:scale-105 hover:shadow-neon-red">
         Emitir Alerta
       </button>
     </form>
   </div>
-);  
+);
 
 export default DashboardPage;

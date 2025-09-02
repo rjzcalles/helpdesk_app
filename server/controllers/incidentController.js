@@ -118,10 +118,46 @@ exports.createIncident = async (req, res) => {
       status: 'abierto'
     });
 
-    // Enviar correo a ambos destinatarios
+    // Enviar correo a destinatarios
     transporter.sendMail({
       from: process.env.SMTP_USER,
-      to: ['marcosgomezpalazuelo1@gmail.com', 'zaldana@netbees.es'],
+      to: ['marcosgomezpalazuelo1@gmail.com'],
+      subject: `Nueva incidencia creada: ${title}`,
+      text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}`
+    }, (err, info) => {
+      if (err) {
+        console.error('Error enviando correo:', err);
+      } else {
+        console.log('Correo enviado:', info.response);
+      }
+    });
+
+    req.io?.emit('incident_created', incident);
+
+    res.status(201).json(incident);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear la incidencia' });
+  }
+};
+
+exports.createIncidentWithImage = async (req, res) => {
+  try {
+    const { title, description, area } = req.body;
+    const image_url = req.file ? req.file.path : null;
+
+    const incident = await Incident.create({
+      title,
+      description,
+      area,
+      userId: req.user.id,
+      status: 'abierto',
+      image_url
+    });
+
+    // Enviar correo a destinatarios
+    transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: ['marcosgomezpalazuelo1@gmail.com'],
       subject: `Nueva incidencia creada: ${title}`,
       text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}`
     }, (err, info) => {

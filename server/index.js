@@ -28,6 +28,7 @@ const userRoutes = require('./routes/userRoutes');
 const incidentRoutes = require('./routes/incidentRoutes');
 app.use('/api/users', userRoutes);
 app.use('/api/incidents', incidentRoutes);
+app.use('/uploads', express.static('uploads'));
 
 io.on('connection', (socket) => {
   console.log('Un cliente se ha conectado:', socket.id);

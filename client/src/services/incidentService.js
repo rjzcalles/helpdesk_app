@@ -75,5 +75,19 @@ const updateAsignado = async (incidentId, asignado) => {
   return response.data;
 };
 
-const incidentService = { createIncident, getIncidents, getAllIncidents, updateIncidentStatus, updateStatus, updateAsignado, deleteIncident };
+// NUEVO: método para crear incidencia con imagen
+const createIncidentWithImage = async (formData) => {
+  const token = localStorage.getItem('token');
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    }
+  };
+  const response = await axios.post('/api/incidents/create-with-image', formData, config);
+  return response.data;
+};
+
+const incidentService = {createIncident, getIncidents, getAllIncidents, updateIncidentStatus, updateStatus, updateAsignado, deleteIncident, createIncidentWithImage};
+
 export default incidentService;
