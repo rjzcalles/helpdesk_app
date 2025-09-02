@@ -30,12 +30,14 @@ const IncidentMarker = ({ position, color, scale = 1, count, onClick, isSelected
 // --- Componente para el Modal de Incidencias (Estilo Futurista) ---
 // ...existing code...
 // --- Componente para el Modal de Incidencias (Estilo Futurista) ---
+// ...existing code...
 const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete }) => {
   const [status, setStatus] = useState(incident.status);
   const [saving, setSaving] = useState(false);
 
-  // Usa la URL del backend desde el .env del frontend
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+  const backendUrl =
+    process.env.REACT_APP_BACKEND_URL ||
+    `${window.location.protocol}//${window.location.hostname}:5001`;
 
   const imageUrl = incident.image_url || incident.imageUrl;
 
@@ -47,9 +49,17 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
     } else if (imageUrl.startsWith('/')) {
       url = `${backendUrl}${imageUrl.replace(/\\/g, '/')}`;
     } else {
-      url = `${backendUrl}/uploads/${imageUrl.replace(/\\/g, '/')}`;
+      url = `${backendUrl}/${imageUrl.replace(/\\/g, '/')}`;
     }
     window.open(url, '_blank', 'noopener,noreferrer,width=800,height=600');
+  };
+
+  const handleStatusChange = async (e) => {
+    const newStatus = e.target.value;
+    setSaving(true);
+    await onStatusChange(incident.id, newStatus);
+    setStatus(newStatus);
+    setSaving(false);
   };
 
   return (
@@ -73,7 +83,7 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
                     ? imageUrl
                     : imageUrl.startsWith('/')
                       ? `${backendUrl}${imageUrl.replace(/\\/g, '/')}`
-                      : `${backendUrl}/uploads/${imageUrl.replace(/\\/g, '/')}`
+                      : `${backendUrl}/${imageUrl.replace(/\\/g, '/')}`
                 }
                 alt="Incidencia"
                 className="mt-2 rounded shadow border border-futuristic-border cursor-pointer"
@@ -92,8 +102,22 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
               />
             </div>
           )}
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-futuristic-text-secondary mb-1">
+              Cambiar estado de la incidencia:
+            </label>
+            <select
+              value={status}
+              onChange={handleStatusChange}
+              disabled={saving}
+              className="w-full px-3 py-2 rounded-md border border-futuristic-border text-futuristic-text-primary bg-futuristic-background-light"
+            >
+              <option value="abierto">Abierto</option>
+              <option value="en proceso">En proceso</option>
+              <option value="cerrado">Cerrado</option>
+            </select>
+          </div>
         </div>
-        {/* ...resto del modal... */}
       </div>
     </div>
   );
