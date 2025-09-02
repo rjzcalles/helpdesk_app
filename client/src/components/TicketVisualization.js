@@ -28,33 +28,29 @@ const IncidentMarker = ({ position, color, scale = 1, count, onClick, isSelected
 };
 
 // --- Componente para el Modal de Incidencias (Estilo Futurista) ---
+// ...existing code...
+// --- Componente para el Modal de Incidencias (Estilo Futurista) ---
 const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete }) => {
   const [status, setStatus] = useState(incident.status);
   const [saving, setSaving] = useState(false);
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await onStatusChange(incident.id, status);
-      onClose();
-    } catch (e) {
-      alert('Error al actualizar el estado');
-    }
-    setSaving(false);
-  };
+  // Usa la URL del backend desde el .env del frontend
+  const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
 
   const imageUrl = incident.image_url || incident.imageUrl;
-  const backendUrl = 'http://localhost:5001';
 
-  // NUEVO: función para abrir la imagen en una ventana aparte
-const handleOpenImageWindow = () => {
-  if (!imageUrl) return;
-  const url =
-    imageUrl.startsWith('/')
-      ? `http://localhost:5001/${imageUrl.replace(/\\/g, '/')}`
-      : `http://localhost:5001/${imageUrl}`;
-  window.open(url, '_blank', 'noopener,noreferrer,width=800,height=600');
-};
+  const handleOpenImageWindow = () => {
+    if (!imageUrl) return;
+    let url;
+    if (imageUrl.startsWith('http')) {
+      url = imageUrl;
+    } else if (imageUrl.startsWith('/')) {
+      url = `${backendUrl}${imageUrl.replace(/\\/g, '/')}`;
+    } else {
+      url = `${backendUrl}/uploads/${imageUrl.replace(/\\/g, '/')}`;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer,width=800,height=600');
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
@@ -73,9 +69,11 @@ const handleOpenImageWindow = () => {
               <strong className="text-futuristic-text-secondary w-28 inline-block">Imagen:</strong>
               <img
                 src={
-                  imageUrl
-                    ? `${backendUrl}/${imageUrl.startsWith('/') ? imageUrl.replace(/\\/g, '/') : '' + imageUrl}`
-                    : ''
+                  imageUrl.startsWith('http')
+                    ? imageUrl
+                    : imageUrl.startsWith('/')
+                      ? `${backendUrl}${imageUrl.replace(/\\/g, '/')}`
+                      : `${backendUrl}/uploads/${imageUrl.replace(/\\/g, '/')}`
                 }
                 alt="Incidencia"
                 className="mt-2 rounded shadow border border-futuristic-border cursor-pointer"
@@ -95,19 +93,7 @@ const handleOpenImageWindow = () => {
             </div>
           )}
         </div>
-        <div className="mt-6 border-t border-futuristic-border pt-4">
-          <label className="font-semibold text-futuristic-text-secondary block mb-2">Actualizar Estado</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm">
-            <option value="abierto">Abierto</option>
-            <option value="en-progreso">En Progreso</option>
-            <option value="cerrado">Cerrado</option>
-          </select>
-        </div>
-        <div className="flex justify-end mt-6 space-x-3">
-          <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-futuristic-primary text-white font-semibold rounded-lg hover:bg-red-700 transition-colors hover:shadow-neon-red">
-            {saving ? 'Guardando...' : 'Guardar Cambios'}
-          </button>
-        </div>
+        {/* ...resto del modal... */}
       </div>
     </div>
   );
