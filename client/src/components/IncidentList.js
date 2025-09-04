@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import incidentService from '../services/incidentService';
 
 const statusStyles = {
   abierto: { text: 'text-futuristic-primary', dot: 'bg-futuristic-primary' },
@@ -17,12 +18,35 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const IncidentList = ({ incidents, title }) => {
+const IncidentList = ({ incidents, title, role }) => {
   const [filter, setFilter] = useState('todos');
+  const [localIncidents, setLocalIncidents] = useState(incidents || []);
+  const [modalIncident, setModalIncident] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  const filteredIncidents = filter === 'todos'
-    ? incidents
-    : incidents.filter(incident => incident.status === filter);
+  useEffect(() => setLocalIncidents(incidents || []), [incidents]);
+
+  const filteredIncidents = useMemo(() => {
+    if (filter === 'todos') return localIncidents;
+    return localIncidents.filter(incident => incident.status === filter);
+  }, [localIncidents, filter]);
+
+  const handleSaveChanges = async (incidentId, newStatus, newAsignado) => {
+    setSaving(true);
+    await incidentService.updateStatus(incidentId, newStatus);
+    await incidentService.updateAsignado(incidentId, newAsignado);
+    setLocalIncidents(prev =>
+      prev.map(inc =>
+        inc.id === incidentId
+          ? { ...inc, status: newStatus, asignado: newAsignado }
+          : inc
+      )
+    );
+    if (modalIncident && modalIncident.id === incidentId) {
+      setModalIncident({ ...modalIncident, status: newStatus, asignado: newAsignado });
+    }
+    setSaving(false);
+  };
 
   return (
     <div className="glass-card p-6 flex flex-col">
@@ -42,9 +66,11 @@ const IncidentList = ({ incidents, title }) => {
         {filteredIncidents.length > 0 ? (
           <ul className="space-y-3">
             {filteredIncidents.map((incident, index) => (
-              <li key={incident.id} 
-                  className="bg-futuristic-background/50 p-4 rounded-lg border border-futuristic-border/50 hover:border-futuristic-secondary transition-all duration-300 animate-fade-in-up"
-                  style={{ animationDelay: `${index * 50}ms` }}>
+              <li
+                key={incident.id}
+                className="bg-futuristic-background/50 p-4 rounded-lg border border-futuristic-border/50 hover:border-futuristic-secondary transition-all duration-300 animate-fade-in-up"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
                 <div className="flex justify-between items-start">
                   <p className="font-bold text-futuristic-text-primary truncate w-3/4">{incident.title}</p>
                   <StatusBadge status={incident.status} />
@@ -54,15 +80,29 @@ const IncidentList = ({ incidents, title }) => {
                   <span className="font-semibold uppercase tracking-wider">{incident.area.replace('-', ' ')}</span>
                   <span>{new Date(incident.createdAt).toLocaleString()}</span>
                 </div>
+                {(role === 'admin_ing' || role === 'admin_inf') && (
+                  <div className="mt-2 flex justify-end">
+                    <button
+                      onClick={() => setModalIncident(incident)}
+                      className="text-xs text-futuristic-secondary font-semibold hover:underline"
+                    >
+                      Ver detalles
+                    </button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
         ) : (
           <div className="flex items-center justify-center h-full">
-             <p className="text-futuristic-text-secondary">// No hay actividad registrada //</p>
+            <p className="text-futuristic-text-secondary">// No hay actividad registrada //</p>
           </div>
         )}
       </div>
+      {(role === 'admin_ing' || role === 'admin_inf') && modalIncident && (
+        <div className="fixed inset-y-0 right-0 z-50 flex items-center justify-end">
+        </div>
+      )}
     </div>
   );
 };

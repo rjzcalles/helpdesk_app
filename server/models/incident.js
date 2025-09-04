@@ -18,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
     locationY: DataTypes.FLOAT,
     image_url: DataTypes.STRING,
     asignado: DataTypes.STRING,
+    problemType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'Informática'
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,

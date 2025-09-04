@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -16,7 +17,15 @@ const LoginPage = () => {
       const res = await axios.post('/api/users/login', formData);
       localStorage.setItem('token', res.data.token);
       setMessage('Acceso concedido. Inicializando interfaz...');
-      setTimeout(() => navigate('/dashboard'), 1500);
+      // Decodifica el token para obtener el rol
+      const { role } = jwtDecode(res.data.token);
+      setTimeout(() => {
+        if (role === 'admin_ing') {
+          navigate('/ing');
+        } else {
+          navigate('/dashboard');
+        }
+      }, 1500);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Credenciales incorrectas.');
     }

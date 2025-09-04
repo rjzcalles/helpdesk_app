@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const incidentController = require('../controllers/incidentController');
-const { createIncident, getIncidents, getAllIncidents, updateIncidentStatus } = require('../controllers/incidentController');
+const { createIncident, getIncidents, updateIncidentStatus } = require('../controllers/incidentController');
 const { protect } = require('../middleware/authMiddleware');
 const { admin } = require('../middleware/adminMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 const multer = require('multer');
 
 // Configuración: carpeta donde se guardan los archivos
@@ -21,8 +22,8 @@ const upload = multer({ storage: storage });
 // Ruta para crear incidencia con imagen opcional
 router.post('/create-with-image', protect, upload.single('image'), incidentController.createIncidentWithImage);
 router.route('/').post(protect, createIncident).get(protect, getIncidents);
-router.get('/all', protect, admin, getAllIncidents);
 router.put('/:id', protect, admin, updateIncidentStatus, incidentController.updateStatus);
+router.patch('/:id/asignado', protect, incidentController.updateAsignado);
 router.patch('/:id/status', protect, incidentController.updateStatus);
 router.delete('/:id', protect, incidentController.deleteIncident);
 

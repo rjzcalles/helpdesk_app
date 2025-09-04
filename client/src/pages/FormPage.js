@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import incidentService from '../services/incidentService';
+
 
 const FormPage = () => {
   const location = useLocation();
   const state = location.state || {};
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (state.area) {
@@ -21,6 +23,7 @@ const FormPage = () => {
   const [text, setText] = useState('');
   const [image, setImage] = useState(null);
   const [success, setSuccess] = useState(false);
+  
 
   // Genera la fecha actual en formato legible
   const fecha = new Date().toLocaleString();
@@ -127,8 +130,16 @@ const FormPage = () => {
           <div className="mt-4 text-green-600 text-center font-semibold">
             ¡Incidencia creada correctamente!
           </div>
-        )}
+        )}  
       </form>
+      <div className="flex justify-center mt-8">
+        <button
+          onClick={() => navigate('/')}
+          className="px-8 py-3 font-bold uppercase tracking-wider text-futuristic-secondary border-2 border-futuristic-secondary rounded-lg hover:bg-futuristic-secondary hover:text-futuristic-background transition-all duration-300 transform hover:scale-105 hover:shadow-neon-cyan w-4/5 max-w-xs text-center"
+        >
+          Volver a Página Principal
+        </button>
+      </div>
     </div>
   );
 };

@@ -64,6 +64,7 @@ const updateStatus = async (incidentId, status, asignado) => {
   return response.data;
 };
 
+// CAMBIO: usa PATCH para coincidir con backend
 const updateAsignado = async (incidentId, asignado) => {
   const config = {
     headers: {
@@ -71,6 +72,7 @@ const updateAsignado = async (incidentId, asignado) => {
       Authorization: `Bearer ${getToken()}`,
     },
   };
+  // PATCH para coincidir con incidentRoutes.js
   const response = await axios.patch(API_URL + incidentId + '/asignado', { asignado }, config);
   return response.data;
 };
@@ -88,6 +90,6 @@ const createIncidentWithImage = async (formData) => {
   return response.data;
 };
 
-const incidentService = {createIncident, getIncidents, getAllIncidents, updateIncidentStatus, updateStatus, updateAsignado, deleteIncident, createIncidentWithImage};
+const incidentService = {createIncident, getIncidents,  getAllIncidents,  updateIncidentStatus,  updateStatus,  updateAsignado,  deleteIncident, createIncidentWithImage};
 
 export default incidentService;

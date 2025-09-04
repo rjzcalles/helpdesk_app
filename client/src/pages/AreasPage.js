@@ -36,12 +36,6 @@ const AreasPage = ({ onAreaSelect }) => {
   }
 };
 
- const handleReturn = () => {
-  if (selectedArea) {
-    navigate('/', { state: { area: selectedArea } });
-  }
-};
-
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 glass-card rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-futuristic-secondary text-center">Selecciona un área</h2>

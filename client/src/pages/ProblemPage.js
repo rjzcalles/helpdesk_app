@@ -23,8 +23,13 @@ const ProblemPage = () => {
   const handleTypeSelect = (type) => {
     setSelectedType(type);
     if (type === 'Ingeniería') {
-      // Navega directamente a FormPage con los datos
-      navigate('/form', { state: { area, problemType: 'Ingeniería' } });
+      // Navega directamente a FormPage con los datos - CORREGIDO: asegurar que problemType sea exactamente 'Ingeniería'
+      navigate('/form', { 
+        state: { 
+          area, 
+          problemType: 'Ingeniería' // Asegurar que se pasa exactamente 'Ingeniería'
+        } 
+      });
     } else {
       setStep(1);
     }
@@ -33,7 +38,13 @@ const ProblemPage = () => {
   const handleSubTypeSelect = (subType) => {
     setSelectedSubType(subType);
     // Navega a FormPage con los datos
-    navigate('/form', { state: { area, problemType: 'Informática', informaticaType: subType } });
+    navigate('/form', { 
+      state: { 
+        area, 
+        problemType: 'Informática', 
+        informaticaType: subType 
+      } 
+    });
   };
 
   return (
@@ -75,8 +86,6 @@ const ProblemPage = () => {
           </div>
         </>
       )}
-      <div>
-      </div>
     </div>
   );
 };

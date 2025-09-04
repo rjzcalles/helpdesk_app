@@ -1,5 +1,3 @@
-/* ...existing code... */
-
 /* Layout horizontal para user en escritorio, vertical en móvil */
 .dashboard-user-main {
   display: flex;
@@ -36,8 +34,6 @@
     padding: 1rem !important;
   }
 }
-
-/* ...existing code... */
 
 /* Responsive estilos para la página principal de login/registro */
 @media (max-width: 600px) {

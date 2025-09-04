@@ -28,12 +28,15 @@ const IncidentMarker = ({ position, color, scale = 1, count, onClick, isSelected
 };
 
 // --- Componente para el Modal de Incidencias (Estilo Futurista) ---
-// ...existing code...
-// --- Componente para el Modal de Incidencias (Estilo Futurista) ---
-// ...existing code...
-const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete }) => {
+const IncidentModal = ({
+  incident,
+  areaLabel,
+  onClose,
+  onSaveChanges,
+  saving
+}) => {
   const [status, setStatus] = useState(incident.status);
-  const [saving, setSaving] = useState(false);
+  const [asignado, setAsignado] = useState(incident.asignado || '');
 
   const backendUrl =
     process.env.REACT_APP_BACKEND_URL ||
@@ -54,12 +57,9 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
     window.open(url, '_blank', 'noopener,noreferrer,width=800,height=600');
   };
 
-  const handleStatusChange = async (e) => {
-    const newStatus = e.target.value;
-    setSaving(true);
-    await onStatusChange(incident.id, newStatus);
-    setStatus(newStatus);
-    setSaving(false);
+  // Solo guarda cuando se pulsa el botón
+  const handleSave = () => {
+    onSaveChanges(incident.id, status, asignado);
   };
 
   return (
@@ -108,14 +108,36 @@ const IncidentModal = ({ incident, areaLabel, onClose, onStatusChange, onDelete 
             </label>
             <select
               value={status}
-              onChange={handleStatusChange}
+              onChange={e => setStatus(e.target.value)}
               disabled={saving}
               className="w-full px-3 py-2 rounded-md border border-futuristic-border text-futuristic-text-primary bg-futuristic-background-light"
             >
               <option value="abierto">Abierto</option>
-              <option value="en proceso">En proceso</option>
+              <option value="en-progreso">En progreso</option>
               <option value="cerrado">Cerrado</option>
             </select>
+          </div>
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-futuristic-text-secondary mb-1">
+              Asignado
+            </label>
+            <input
+              type="text"
+              value={asignado}
+              onChange={e => setAsignado(e.target.value)}
+              disabled={saving}
+              className="w-full px-3 py-2 rounded-md border border-futuristic-border text-futuristic-text-primary bg-futuristic-background-light"
+              placeholder="Nombre del responsable"
+            />
+          </div>
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-4 py-2 bg-futuristic-primary text-white rounded hover:bg-futuristic-secondary transition"
+            >
+              {saving ? 'Guardando...' : 'Guardar cambios'}
+            </button>
           </div>
         </div>
       </div>
@@ -155,23 +177,37 @@ const getColorByCount = (count) => {
 const TicketVisualization = ({ incidents }) => {
   const [selectedArea, setSelectedArea] = useState(null);
   const [modalIncident, setModalIncident] = useState(null);
-  const [localIncidents, setLocalIncidents] = useState(incidents);
+  const [localIncidents, setLocalIncidents] = useState(incidents || []);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => setLocalIncidents(incidents), [incidents]);
+  useEffect(() => setLocalIncidents(incidents || []), [incidents]);
 
   const incidentsByArea = useMemo(() => {
-    const groups = {};
-    localIncidents.forEach(inc => {
-      if (!inc.area || inc.status === 'cerrado') return;
-      if (!groups[inc.area]) groups[inc.area] = [];
-      groups[inc.area].push(inc);
-    });
-    return groups;
-  }, [localIncidents]);
+  const groups = {};
+  (localIncidents || []).forEach(inc => {
+    if (!inc.area || inc.status === 'cerrado') return;
+    if (!groups[inc.area]) groups[inc.area] = [];
+    groups[inc.area].push(inc);
+  });
+  return groups;
+}, [localIncidents]);
 
-  const handleStatusChange = async (incidentId, newStatus) => {
-    const updated = await incidentService.updateStatus(incidentId, newStatus);
-    setLocalIncidents(prev => prev.map(inc => inc.id === incidentId ? { ...inc, ...updated } : inc));
+  // Nuevo: Actualiza la incidencia localmente tras guardar
+  const handleSaveChanges = async (incidentId, newStatus, newAsignado) => {
+    setSaving(true);
+    await incidentService.updateStatus(incidentId, newStatus);
+    await incidentService.updateAsignado(incidentId, newAsignado);
+    setLocalIncidents(prev =>
+      prev.map(inc =>
+        inc.id === incidentId
+          ? { ...inc, status: newStatus, asignado: newAsignado }
+          : inc
+      )
+    );
+    if (modalIncident && modalIncident.id === incidentId) {
+      setModalIncident({ ...modalIncident, status: newStatus, asignado: newAsignado });
+    }
+    setSaving(false);
   };
 
   const handleDeleteIncident = async (incidentId) => {
@@ -228,8 +264,8 @@ const TicketVisualization = ({ incidents }) => {
           areaLabel={areaConfig[modalIncident.area]?.label || modalIncident.area}
           imageUrl={modalIncident.imageUrl}
           onClose={() => setModalIncident(null)}
-          onStatusChange={handleStatusChange}
-          onDelete={handleDeleteIncident}
+          onSaveChanges={handleSaveChanges}
+          saving={saving}
         />
       )}
     </div>

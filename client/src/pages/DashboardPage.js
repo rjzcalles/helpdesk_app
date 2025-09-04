@@ -119,7 +119,17 @@ const DashboardPage = () => {
     }
   };
 
-  const visibleIncidents = incidents.filter(inc => inc.status !== 'cerrado');
+  // Filtrado de incidencias según el rol
+  const visibleIncidents = useMemo(() => {
+    let filtered = incidents.filter(inc => inc.status !== 'cerrado');
+    if (role === 'admin_inf') {
+      filtered = filtered.filter(inc => inc.problemType === 'Informática');
+    }
+    if (role === 'admin_ing') {
+      filtered = filtered.filter(inc => inc.problemType === 'Ingeniería');
+    }
+    return filtered;
+  }, [incidents, role]);
 
   const metrics = {
     total: incidents.length,
@@ -141,14 +151,16 @@ const DashboardPage = () => {
           </button>
         </header>
 
-        {role !== 'user' && (
+        {/* Métricas solo para admin_inf y admin_ing */}
+        {(role === 'admin_inf' || role === 'admin_ing') && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <MetricsCard title="Señales Totales" value={metrics.total} delay="200ms" />
             <MetricsCard title="Alertas Activas" value={metrics.open} color="red" delay="300ms" />
-            <MetricsCard title="En Observación" value={metrics.inProgress} color="yellow" delay="400ms" />
+            <MetricsCard title="En Progreso" value={metrics.inProgress} color="yellow" delay="400ms" />
             <MetricsCard title="Sistemas Estables" value={metrics.closed} color="cyan" delay="500ms" />
           </div>
         )}
+
         <main
           className={
             role === 'user'
@@ -172,26 +184,25 @@ const DashboardPage = () => {
                 <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
               </div>
             </>
-          ) : (
-            <div className="lg:col-span-1 space-y-8 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-              <CreateIncidentForm
-                formData={formData}
-                onChange={onChange}
-                onSubmit={onSubmit}
-                factoryAreas={factoryAreas}
-                image={image}
-                onPasteImage={onPasteImage}
-              />
-              <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
-            </div>
-          )}
-
-          {role !== 'user' && (
-            <div className="lg:col-span-2 glass-card p-6 min-h-[400px] lg:min-h-0 animate-fade-in-up" style={{ animationDelay: '700ms' }}>
-              <h2 className="text-2xl font-bold mb-4 text-futuristic-secondary">[ Mapa de Planta ]</h2>
-              <TicketVisualization incidents={visibleIncidents} />
-            </div>
-          )}
+          ) : role === 'admin_inf' ? (
+            <>
+              <div className="lg:col-span-1 space-y-8 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                <CreateIncidentForm
+                  formData={formData}
+                  onChange={onChange}
+                  onSubmit={onSubmit}
+                  factoryAreas={factoryAreas}
+                  image={image}
+                  onPasteImage={onPasteImage}
+                />
+                <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
+              </div>
+              <div className="lg:col-span-2 glass-card p-6 min-h-[400px] lg:min-h-0 animate-fade-in-up" style={{ animationDelay: '700ms' }}>
+                <h2 className="text-2xl font-bold mb-4 text-futuristic-secondary">[ Mapa de Planta ]</h2>
+                <TicketVisualization incidents={visibleIncidents || []} />
+              </div>
+            </>
+          ) : null}
         </main>
       </div>
     </div>
