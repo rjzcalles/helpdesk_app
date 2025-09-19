@@ -21,8 +21,9 @@ const LoginPage = () => {
       const { role } = jwtDecode(res.data.token);
       setTimeout(() => {
         if (role === 'admin_ing') {
-          navigate('/ing');
-        } else {
+          navigate('/dashboard');
+        }
+        else {
           navigate('/dashboard');
         }
       }, 1500);

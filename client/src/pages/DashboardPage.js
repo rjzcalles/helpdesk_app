@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { jwtDecode } from 'jwt-decode';
-
+import IncidentModal from '../components/TicketVisualization';
 import incidentService from '../services/incidentService';
 import TicketVisualization from '../components/TicketVisualization';
 import IncidentList from '../components/IncidentList';
@@ -44,11 +44,21 @@ const factoryAreas = [
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [incidents, setIncidents] = useState([]);
-  const [formData, setFormData] = useState({ title: '', description: '', area: '' });
+  const [formData, setFormData] = useState({ title: '', description: '', area: '', problemType: '' });
   const [image, setImage] = useState(null);
+  const [filter, setFilter] = useState('todos');
+  const [modalIncident, setModalIncident] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  // Modal para métricas
+  const [metricsModalOpen, setMetricsModalOpen] = useState(false);
+  const [metricsFilter, setMetricsFilter] = useState('todos');
+
+  // Referencia para el campo de imagen editable
+  const imageInputRef = useRef(null);
 
   // Obtener rol e id del usuario autenticado
-  const { role, id } = useMemo(() => getAuthInfo(), []);
+  const { role } = useMemo(() => getAuthInfo(), []);
 
   useEffect(() => {
     if (!role) {
@@ -82,6 +92,7 @@ const DashboardPage = () => {
       socket.off('incident_created');
       socket.off('incident_updated');
     };
+    // eslint-disable-next-line
   }, [role, navigate]);
 
   const handleLogout = () => {
@@ -109,11 +120,16 @@ const DashboardPage = () => {
       data.append('title', formData.title);
       data.append('description', formData.description);
       data.append('area', formData.area);
+      data.append('problemType', formData.problemType);
       if (image) data.append('image', image);
 
       await incidentService.createIncidentWithImage(data);
-      setFormData({ title: '', description: '', area: '' });
+      setFormData({ title: '', description: '', area: '', problemType: '' });
       setImage(null);
+      // Limpiar el campo visual editable de imagen
+      if (imageInputRef.current) {
+        imageInputRef.current.innerHTML = '';
+      }
     } catch (error) {
       console.error('Error al crear la incidencia', error);
     }
@@ -121,21 +137,46 @@ const DashboardPage = () => {
 
   // Filtrado de incidencias según el rol
   const visibleIncidents = useMemo(() => {
-    let filtered = incidents.filter(inc => inc.status !== 'cerrado');
-    if (role === 'admin_inf') {
-      filtered = filtered.filter(inc => inc.problemType === 'Informática');
-    }
+    let filtered = incidents.filter(inc => inc.status !== '');
     if (role === 'admin_ing') {
       filtered = filtered.filter(inc => inc.problemType === 'Ingeniería');
     }
     return filtered;
   }, [incidents, role]);
 
+  // Filtrado adicional para admin_ing según el filtro de estado
+  const filteredIncidents = useMemo(() => {
+    if (role !== 'admin_ing') return visibleIncidents;
+    if (filter === 'todos') return visibleIncidents;
+    return visibleIncidents.filter(inc => inc.status === filter);
+  }, [visibleIncidents, filter, role]);
+
   const metrics = {
     total: incidents.length,
     open: incidents.filter(inc => inc.status === 'abierto').length,
     inProgress: incidents.filter(inc => inc.status === 'en-progreso').length,
     closed: incidents.filter(inc => inc.status === 'cerrado').length,
+  };
+
+  // Modal de métricas: abrir y filtrar
+  const handleMetricsClick = (filter) => {
+    setMetricsFilter(filter);
+    setMetricsModalOpen(true);
+  };
+
+  const handleSaveChanges = async (incidentId, newStatus, newAsignado) => {
+    setSaving(true);
+    await incidentService.updateStatus(incidentId, newStatus);
+    await incidentService.updateAsignado(incidentId, newAsignado);
+    setIncidents(prev =>
+      prev.map(inc =>
+        inc.id === incidentId
+          ? { ...inc, status: newStatus, asignado: newAsignado }
+          : inc
+      )
+    );
+    setSaving(false);
+    setModalIncident(null);
   };
 
   return (
@@ -151,13 +192,37 @@ const DashboardPage = () => {
           </button>
         </header>
 
-        {/* Métricas solo para admin_inf y admin_ing */}
-        {(role === 'admin_inf' || role === 'admin_ing') && (
+        {(role === 'admin_inf') && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <MetricsCard title="Señales Totales" value={metrics.total} delay="200ms" />
-            <MetricsCard title="Alertas Activas" value={metrics.open} color="red" delay="300ms" />
-            <MetricsCard title="En Progreso" value={metrics.inProgress} color="yellow" delay="400ms" />
-            <MetricsCard title="Sistemas Estables" value={metrics.closed} color="cyan" delay="500ms" />
+            <MetricsCard title="Señales Totales" value={metrics.total} delay="200ms" onClick={() => handleMetricsClick('todos')} />
+            <MetricsCard title="Alertas Activas" value={metrics.open} color="red" delay="300ms" onClick={() => handleMetricsClick('abierto')} />
+            <MetricsCard title="En Progreso" value={metrics.inProgress} color="yellow" delay="400ms" onClick={() => handleMetricsClick('en-progreso')} />
+            <MetricsCard title="Sistemas Estables" value={metrics.closed} color="cyan" delay="500ms" onClick={() => handleMetricsClick('cerrado')} />
+          </div>
+        )}
+
+        {/* Modal de métricas */}
+        {metricsModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setMetricsModalOpen(false)}>
+            <div className="glass-card p-6 w-full max-w-2xl animate-fade-in-up" onClick={e => e.stopPropagation()}>
+              <h2 className="text-xl font-bold mb-4 text-futuristic-secondary">
+                Incidencias {metricsFilter === 'todos' ? 'Totales' : metricsFilter}
+              </h2>
+              <IncidentList
+                incidents={
+                  metricsFilter === 'todos'
+                    ? visibleIncidents
+                    : visibleIncidents.filter(inc => inc.status === metricsFilter)
+                }
+                title="Incidencias"
+                role={role}
+              />
+              <div className="mt-4 flex justify-end">
+                <button onClick={() => setMetricsModalOpen(false)} className="px-4 py-2 bg-futuristic-primary text-white rounded hover:bg-futuristic-secondary transition">
+                  Cerrar
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -178,10 +243,11 @@ const DashboardPage = () => {
                   factoryAreas={factoryAreas}
                   image={image}
                   onPasteImage={onPasteImage}
+                  imageInputRef={imageInputRef}
                 />
               </div>
               <div className="dashboard-user-panel">
-                <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
+                <IncidentList incidents={visibleIncidents} title="Registro de Actividad" role={role} />
               </div>
             </>
           ) : role === 'admin_inf' ? (
@@ -194,22 +260,37 @@ const DashboardPage = () => {
                   factoryAreas={factoryAreas}
                   image={image}
                   onPasteImage={onPasteImage}
+                  imageInputRef={imageInputRef}
                 />
-                <IncidentList incidents={visibleIncidents} title="Registro de Actividad" />
+                <IncidentList
+                  incidents={visibleIncidents}
+                  title="Registro de Actividad" role={role}
+                />
               </div>
               <div className="lg:col-span-2 glass-card p-6 min-h-[400px] lg:min-h-0 animate-fade-in-up" style={{ animationDelay: '700ms' }}>
                 <h2 className="text-2xl font-bold mb-4 text-futuristic-secondary">[ Mapa de Planta ]</h2>
-                <TicketVisualization incidents={visibleIncidents || []} />
+                <TicketVisualization
+                  incidents={visibleIncidents}
+                />
               </div>
             </>
-          ) : null}
+          ) : role === 'admin_ing' ? (
+              <div className="lg:col-span-3 flex justify-center items-start">
+                <div className="w-full max-w-2xl space-y-8 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                  <IncidentList
+                    incidents={visibleIncidents.filter(inc => inc.problemType === 'Ingeniería')}
+                    title="Registro de Actividad" role={role}
+                  />
+                </div>
+              </div>
+            ) : null}
         </main>
       </div>
     </div>
   );
 };
 
-const CreateIncidentForm = ({ formData, onChange, onSubmit, factoryAreas, image, onPasteImage }) => (
+const CreateIncidentForm = ({ formData, onChange, onSubmit, factoryAreas, image, onPasteImage, imageInputRef }) => (
   <div className="glass-card p-6">
     <h2 className="text-2xl font-bold mb-4 text-futuristic-secondary">[ Nueva Alerta ]</h2>
     <form onSubmit={onSubmit} className="space-y-4">
@@ -225,12 +306,21 @@ const CreateIncidentForm = ({ formData, onChange, onSubmit, factoryAreas, image,
         </select>
       </div>
       <div>
+        <label className="block text-sm font-medium text-futuristic-text-secondary mb-1">Tipo de problema</label>
+        <select name="problemType" value={formData.problemType} onChange={onChange} required className="block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm">
+          <option value="" disabled>Seleccionar tipo...</option>
+          <option value="Informática">Informática</option>
+          <option value="Ingeniería">Ingeniería</option>
+        </select>
+      </div>
+      <div>
         <label className="block text-sm font-medium text-futuristic-text-secondary mb-1">Informe Detallado</label>
         <textarea name="description" value={formData.description} onChange={onChange} placeholder="Detalles técnicos de la alerta..." required className="block w-full px-3 py-2 bg-futuristic-background-light border border-futuristic-text-secondary/50 rounded-md shadow-sm text-futuristic-text-primary placeholder:text-futuristic-text-secondary/70 focus:outline-none focus:ring-1 focus:ring-futuristic-secondary focus:border-futuristic-secondary sm:text-sm" rows="4"></textarea>
       </div>
       <div>
         <label className="block text-sm font-medium text-futuristic-text-secondary mb-1">Imagen (solo pegar)</label>
         <div
+          ref={imageInputRef}
           contentEditable={true}
           onPaste={onPasteImage}
           className="border border-dashed border-futuristic-text-secondary/50 rounded-md p-4 bg-futuristic-background-light"

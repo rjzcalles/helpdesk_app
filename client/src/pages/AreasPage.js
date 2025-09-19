@@ -38,7 +38,7 @@ const AreasPage = ({ onAreaSelect }) => {
 
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 glass-card rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-futuristic-secondary text-center">Selecciona un área</h2>
+      <h2 className="text-2xl font-bold mb-6 text-futuristic-secondary text-center">Selecciona tu área</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {factoryAreas.map(area => (
           <button

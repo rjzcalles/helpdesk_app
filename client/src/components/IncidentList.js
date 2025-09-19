@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import incidentService from '../services/incidentService';
+import ModalPage from '../pages/ModalPage';
 
 const statusStyles = {
   abierto: { text: 'text-futuristic-primary', dot: 'bg-futuristic-primary' },
@@ -22,7 +23,6 @@ const IncidentList = ({ incidents, title, role }) => {
   const [filter, setFilter] = useState('todos');
   const [localIncidents, setLocalIncidents] = useState(incidents || []);
   const [modalIncident, setModalIncident] = useState(null);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => setLocalIncidents(incidents || []), [incidents]);
 
@@ -31,21 +31,12 @@ const IncidentList = ({ incidents, title, role }) => {
     return localIncidents.filter(incident => incident.status === filter);
   }, [localIncidents, filter]);
 
-  const handleSaveChanges = async (incidentId, newStatus, newAsignado) => {
-    setSaving(true);
-    await incidentService.updateStatus(incidentId, newStatus);
-    await incidentService.updateAsignado(incidentId, newAsignado);
+  const handleSaved = (updatedIncident) => {
     setLocalIncidents(prev =>
       prev.map(inc =>
-        inc.id === incidentId
-          ? { ...inc, status: newStatus, asignado: newAsignado }
-          : inc
+        inc.id === updatedIncident.id ? updatedIncident : inc
       )
     );
-    if (modalIncident && modalIncident.id === incidentId) {
-      setModalIncident({ ...modalIncident, status: newStatus, asignado: newAsignado });
-    }
-    setSaving(false);
   };
 
   return (
@@ -60,6 +51,7 @@ const IncidentList = ({ incidents, title, role }) => {
           <option value="todos">Todos</option>
           <option value="abierto">Abierto</option>
           <option value="en-progreso">En Progreso</option>
+          <option value="cerrado">Cerrado</option>
         </select>
       </div>
       <div className="overflow-y-auto flex-grow h-[calc(100vh-600px)] min-h-[300px] pr-2">
@@ -82,10 +74,7 @@ const IncidentList = ({ incidents, title, role }) => {
                 </div>
                 {(role === 'admin_ing' || role === 'admin_inf') && (
                   <div className="mt-2 flex justify-end">
-                    <button
-                      onClick={() => setModalIncident(incident)}
-                      className="text-xs text-futuristic-secondary font-semibold hover:underline"
-                    >
+                    <button onClick={() => setModalIncident(incident)} className="text-xs text-futuristic-secondary font-semibold hover:underline">
                       Ver detalles
                     </button>
                   </div>
@@ -100,8 +89,11 @@ const IncidentList = ({ incidents, title, role }) => {
         )}
       </div>
       {(role === 'admin_ing' || role === 'admin_inf') && modalIncident && (
-        <div className="fixed inset-y-0 right-0 z-50 flex items-center justify-end">
-        </div>
+        <ModalPage
+          incident={modalIncident}
+          onClose={() => setModalIncident(null)}
+          onSaved={handleSaved}
+        />
       )}
     </div>
   );

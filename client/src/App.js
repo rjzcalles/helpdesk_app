@@ -6,7 +6,6 @@ import DashboardPage from './pages/DashboardPage';
 import ProblemPage from './pages/ProblemPage';
 import AreasPage from './pages/AreasPage';
 import FormPage from './pages/FormPage';
-import IngPage from './pages/IngPage';
 import PrivateRoute from './components/PrivateRoute';
 import './App.css';
 import axios from 'axios';
@@ -18,15 +17,14 @@ function App() {
         {/* Rutas Públicas */}
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/areas" element={<AreasPage />} />
-        <Route path="/problem" element={<ProblemPage />} />
-        <Route path="/form" element={<FormPage />} />
         <Route path="/" element={<HomePage />} />
-        <Route path="/ing" element={<IngPage />} />
 
         {/* Rutas Privadas */}
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/form" element={<FormPage />} />
+          <Route path="/areas" element={<AreasPage />} />
+          <Route path="/problem" element={<ProblemPage />} />
         </Route>
       </Routes>
     </Router>

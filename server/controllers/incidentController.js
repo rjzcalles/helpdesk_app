@@ -36,6 +36,15 @@ exports.updateStatus = async (req, res) => {
   }
 };
 
+exports.getAllIncidents = async (req, res) => {
+  try {
+    const incidents = await Incident.findAll();
+    res.json(incidents);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener todas las incidencias.' });
+  }
+};
+
 exports.deleteIncident = async (req, res) => {
   try {
     const incident = await Incident.findByPk(req.params.id);
@@ -63,23 +72,38 @@ exports.updateAsignado = async (req, res) => {
 };
 
 // Actualizar una incidencia completa (PUT /:id)
-exports.updateIncidentStatus = async (req, res) => {
+exports.updateIncident = async (req, res) => {
   try {
-    const { status } = req.body;
-    const incident = await Incident.findByPk(req.params.id);
-    if (incident) {
-      incident.status = status;
-      await incident.save();
+    const { status, asignado } = req.body;
+    const incident = await Incident.findByPk(req.params.id, { include: User });
+    if (!incident) return res.status(404).json({ error: 'No encontrado' });
 
-      req.io?.emit('incident_updated', incident);
+    if (typeof status !== 'undefined') incident.status = status;
+    if (typeof asignado !== 'undefined') incident.asignado = asignado;
+    await incident.save();
 
-      res.status(200).json(incident);
-    } else {
-      res.status(404).json({ message: 'Incidencia no encontrada.' });
+    // Enviar correo si el estado es "cerrado"
+    if (status === 'cerrado' && incident.User?.email) {
+      transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: incident.User.email,
+        subject: `Tu incidencia ha sido cerrada`,
+        text: `La incidencia "${incident.title}" en el área "${incident.area}" ha sido cerrada.`
+      }, (err, info) => {
+        if (err) {
+          console.error('Error enviando correo:', err);
+        } else {
+          console.log('Correo enviado:', info.response);
+        }
+      });
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al actualizar la incidencia.' });
+
+    req.io?.emit('incident_updated', incident);
+
+    res.json(incident);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Error actualizando incidencia' });
   }
 };
 
@@ -96,20 +120,6 @@ exports.createIncident = async (req, res) => {
       status: 'abierto'
     });
 
-    // Enviar correo a destinatarios
-    transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: ['rodrigo.zaldana@netbees.es'],
-      subject: `Nueva incidencia creada: ${title}`,
-      text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}`
-    }, (err, info) => {
-      if (err) {
-        console.error('Error enviando correo:', err);
-      } else {
-        console.log('Correo enviado:', info.response);
-      }
-    });
-
     req.io?.emit('incident_created', incident);
 
     res.status(201).json(incident);
@@ -120,46 +130,56 @@ exports.createIncident = async (req, res) => {
 
 exports.createIncidentWithImage = async (req, res) => {
   try {
-    const { title, description, area, problemType } = req.body; // Agregué problemType aquí
+    const { title, description, area, problemType } = req.body;
     const image_url = req.file ? req.file.path : null;
-
-    console.log('Datos recibidos en backend:', { // Debug temporal
-      title,
-      description,
-      area,
-      problemType, // Debería mostrar 'Ingeniería'
-      image_url
-    });
 
     const incident = await Incident.create({
       title,
       description,
       area,
-      problemType: problemType || 'Informática', // ¡CORREGIDO! Ahora incluye problemType
+      problemType: problemType || 'Informática',
       userId: req.user.id,
       status: 'abierto',
       image_url
     });
 
-    // Enviar correo a destinatarios
-    transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: ['marcosgomezpalazuelo1@gmail.com'],
-      subject: `Nueva incidencia creada: ${title}`,
-      text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}\n\nTipo: ${problemType || 'Informática'}`
-    }, (err, info) => {
-      if (err) {
-        console.error('Error enviando correo:', err);
-      } else {
-        console.log('Correo enviado:', info.response);
-      }
-    });
+    // Enviar SIEMPRE a:
+    if (problemType === 'Informática') {
+      transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: ['rodrigo.zaldana@netbees.es'],
+        subject: `Nueva incidencia creada: ${title}`,
+        text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}\n\nTipo: ${problemType}`
+      }, (err, info) => {
+        if (err) {
+          console.error('Error enviando correo:', err);
+        } else {
+          console.log('Correo enviado:', info.response);
+        }
+      });
+    }
+
+    // Si es de Ingeniería, también enviar a:
+    if (problemType === 'Ingeniería') {
+      transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: ['gomezpalazuelom@gmail.com'],
+        subject: `Nueva incidencia creada: ${title}`,
+        text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}\n\nTipo: ${problemType}`
+      }, (err, info) => {
+        if (err) {
+          console.error('Error enviando correo:', err);
+        } else {
+          console.log('Correo enviado:', info.response);
+        }
+      });
+    }
 
     req.io?.emit('incident_created', incident);
 
     res.status(201).json(incident);
   } catch (error) {
-    console.error('Error en createIncidentWithImage:', error); // Mejor log de errores
+    console.error('Error en createIncidentWithImage:', error);
     res.status(500).json({ error: 'Error al crear la incidencia' });
   }
 };

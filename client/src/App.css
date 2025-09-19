@@ -1,3 +1,8 @@
+/* En index.css o App.css */
+body, html, #root {
+  height: 100%;
+}
+
 /* Layout horizontal para user en escritorio, vertical en móvil */
 .dashboard-user-main {
   display: flex;

@@ -25,14 +25,13 @@ const deleteIncident = async (incidentId) => {
   return response.data;
 };
 
-// CAMBIO: recibe el rol y llama al endpoint correcto
 const getIncidents = async (role) => {
   const config = {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
   };
-  const url = role === 'admin' ? API_URL_ALL : API_URL;
+  const url = (role === 'admin_inf' || role === 'admin_ing') ? API_URL_ALL : API_URL;
   const response = await axios.get(url, config);
   return response.data;
 };
@@ -44,6 +43,18 @@ const getAllIncidents = async () => {
     },
   };
   const response = await axios.get(API_URL + 'all', config);
+  return response.data;
+};
+
+// NUEVO: Actualiza status y asignado juntos (igual que TicketVisualization)
+const updateIncident = async (id, data) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      'Content-Type': 'application/json',
+    },
+  };
+  const response = await axios.put(API_URL + id, data, config);
   return response.data;
 };
 
@@ -64,7 +75,6 @@ const updateStatus = async (incidentId, status, asignado) => {
   return response.data;
 };
 
-// CAMBIO: usa PATCH para coincidir con backend
 const updateAsignado = async (incidentId, asignado) => {
   const config = {
     headers: {
@@ -72,12 +82,10 @@ const updateAsignado = async (incidentId, asignado) => {
       Authorization: `Bearer ${getToken()}`,
     },
   };
-  // PATCH para coincidir con incidentRoutes.js
   const response = await axios.patch(API_URL + incidentId + '/asignado', { asignado }, config);
   return response.data;
 };
 
-// NUEVO: método para crear incidencia con imagen
 const createIncidentWithImage = async (formData) => {
   const token = localStorage.getItem('token');
   const config = {
@@ -90,6 +98,6 @@ const createIncidentWithImage = async (formData) => {
   return response.data;
 };
 
-const incidentService = {createIncident, getIncidents,  getAllIncidents,  updateIncidentStatus,  updateStatus,  updateAsignado,  deleteIncident, createIncidentWithImage};
+const incidentService = {createIncident, getIncidents, getAllIncidents, updateIncidentStatus, updateStatus, updateAsignado, updateIncident, deleteIncident, createIncidentWithImage};
 
 export default incidentService;

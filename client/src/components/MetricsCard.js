@@ -33,14 +33,15 @@ const Counter = ({ from = 0, to }) => {
     return <span ref={nodeRef} />;
 }
 
-const MetricsCard = ({ title, value, color = 'default', delay = '0s' }) => {
+const MetricsCard = ({ title, value, color = 'default', onClick, delay = '0s' }) => {
   const colorClass = colorMap[color] || colorMap.default;
   const shadowClass = shadowMap[color] || shadowMap.default;
 
   return (
     <div 
         className={`glass-card p-5 flex flex-col justify-between transition-all duration-300 transform hover:-translate-y-2 ${shadowClass} animate-fade-in-up`}
-        style={{ animationDelay: delay }}>
+        style={{ animationDelay: delay }}
+        onClick={onClick}>
       <h3 className="text-md font-semibold text-futuristic-text-secondary truncate">{title}</h3>
       <p className={`text-5xl font-bold mt-2 ${colorClass}`}>
         <Counter to={value} />

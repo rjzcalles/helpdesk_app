@@ -3,6 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Svg, Center, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import incidentService from '../services/incidentService';
+import ModalPage from '../pages/ModalPage';
 
 // --- Componente para el marcador 3D ---
 const IncidentMarker = ({ position, color, scale = 1, count, onClick, isSelected }) => {
@@ -219,7 +220,7 @@ const TicketVisualization = ({ incidents }) => {
 
   return (
     <div className="w-full h-full">
-      <div className="w-full h-[500px] lg:h-[600px] rounded-lg bg-futuristic-background border-2 border-futuristic-border/30 overflow-hidden relative">
+      <div className="w-full h-[500px] lg:h-[600px] rounded-lg bg-futuristic-background border-2 bordera-futuristic-border/30 overflow-hidden relative">
         <Canvas orthographic camera={{ position: [0, 0, 100], zoom: 2 }}>
           <ambientLight intensity={0.5} />
           <directionalLight position={[10, 20, 30]} intensity={1} />
@@ -240,7 +241,7 @@ const TicketVisualization = ({ incidents }) => {
               />
             );
           })}
-          <OrbitControls enableZoom={true} enableRotate={false} enablePan={false} minZoom={2} maxZoom={3} />
+          <OrbitControls enableZoom={true} enableRotate={false} enablePan={true} minZoom={2} maxZoom={3} />
         </Canvas>
       </div>
 
@@ -258,14 +259,18 @@ const TicketVisualization = ({ incidents }) => {
         </div>
       )}
 
+      {/* MODALPAGE: Modal centrado y scrolleable */}
       {modalIncident && (
-        <IncidentModal
+        <ModalPage
           incident={modalIncident}
-          areaLabel={areaConfig[modalIncident.area]?.label || modalIncident.area}
-          imageUrl={modalIncident.imageUrl}
           onClose={() => setModalIncident(null)}
-          onSaveChanges={handleSaveChanges}
-          saving={saving}
+          onSaved={updated => {
+            setLocalIncidents(prev =>
+              prev.map(inc =>
+                inc.id === updated.id ? updated : inc
+              )
+            );
+          }}
         />
       )}
     </div>
