@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import incidentService from '../services/incidentService';
 
-// Cambia esto por la URL real de tu backend si es diferente
-const backendUrl = 'http://localhost:5001';
+const backendUrl =
+    process.env.REACT_APP_BACKEND_URL ||
+    `${window.location.protocol}//${window.location.hostname}:5001`;
 
 const ModalPage = ({ incident, onClose, onSaved }) => {
   const [modalIncident, setModalIncident] = useState(incident);
