@@ -1,4 +1,4 @@
-name: Build and Deploy to Digital Ocean
+name: Deploy Pre-built App to Digital Ocean
 
 on:
   push:
@@ -6,90 +6,48 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18' # Puedes cambiar la versión de Node si es necesario
-          cache: 'npm'
-          cache-dependency-path: client/package-lock.json # Ruta al lock file del cliente
-
-      - name: Install and Build Frontend
-        working-directory: ./client # Asume que tu app de frontend está en la carpeta 'client'
-        run: |
-          npm install
-          npm run build # O el comando que uses para construir tu app
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: helpdesk-build
-          path: client/build # Ruta a la carpeta que se genera con el build
-
   deploy:
-    needs: build # Este job depende de que el job 'build' termine correctamente
     runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: helpdesk-build
 
-      - name: Deploy to Server
+    steps:
+      - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Define las rutas en el servidor
+            # Define la ruta de la aplicación en el servidor
             APP_DIR="/var/www/helpdesk_app"
-            CLIENT_DIR="$APP_DIR/client/build" # Directorio de destino para el frontend
             
-            # --- Gestión del Backend ---
+            # Comprueba si el directorio de la aplicación ya existe
+            # Si no existe, clona el repositorio por primera vez
+            if [ ! -d "$APP_DIR"/.git ]; then
+              echo "Directorio .git no encontrado. Clonando repositorio..."
+              # Clona en un directorio temporal y luego mueve el contenido
+              git clone https://github.com/rjzcalles/helpdesk_app.git $APP_DIR
+            fi
+            
             # Navega al directorio de la aplicación
             cd $APP_DIR
             
-            # Actualiza solo el código del backend desde Git
-            # Descartamos cambios en todo, pero solo nos interesa el backend ahora
+            echo "Forzando la actualización desde el repositorio..."
+            # Descarta cualquier cambio local que pudiera existir en el servidor
             git reset --hard HEAD
+            # Limpia archivos y directorios no rastreados para asegurar un estado limpio
             git clean -fd
+            # Descarga la versión más reciente de la rama main (incluyendo la carpeta 'build')
             git pull origin main
             
             # Instalar/actualizar dependencias SOLO del backend
             echo "Installing server dependencies..."
             cd server
-            npm install
+            npm install # Usamos --production para instalar solo lo necesario en producción
             cd ..
-
-            # --- Despliegue del Frontend ---
-            echo "Deploying frontend..."
-            # Elimina la carpeta de build anterior para asegurar una copia limpia
-            rm -rf $CLIENT_DIR
-            echo "Old build directory removed."
             
-      - name: Copy build files to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "." # El contenido del artefacto descargado
-          target: "/var/www/helpdesk_app/client/build" # La ruta de destino en el servidor
-
-      - name: Restart Backend Service
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            # Reiniciar la aplicación de backend para aplicar los cambios
+            # Reiniciar la aplicación de backend para aplicar los cambios (RECORDAR QUE HAY QUE GENERAR PRIMERO EL BUILD)
             echo "Restarting application..."
             sudo systemctl restart helpdesk-api.service
+            
             echo "Deployment finished!"
+
