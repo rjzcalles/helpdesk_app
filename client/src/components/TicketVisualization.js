@@ -146,7 +146,7 @@ const IncidentModal = ({
   );
 };
 
-// --- Configuración de Áreas y Colores ---
+// --- Configuración de Áreas Nombres y Colores ---
 const areaConfig = {
     'Línea PS': { position: new THREE.Vector3(-47, 18, 10), label: 'Línea PS' },
     'Oficinas': { position: new THREE.Vector3(-48, -103, 10), label: 'Oficinas' },
