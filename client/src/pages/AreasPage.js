@@ -2,17 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const factoryAreas = [
-  { id: 'Nissan/Renault', name: 'Nissan/Renault' },
-  { id: 'PS', name: 'PS' },
+  { id: 'Línea PS', name: 'Línea PS' },
   { id: 'Hidroalcohol', name: 'Hidroalcohol' },
   { id: 'Oficinas', name: 'Oficinas' },
   { id: 'netbees', name: 'Área de Netbees' },
   { id: '3D', name: '3D' },
   { id: 'racores', name: 'Área de Racores' },
   { id: 'Recepción', name: 'Recepción' },
-  { id: 'PD', name: 'PD' },
-  { id: 'Crippas y Bancos', name: 'Crippas y Bancos' },
-  { id: 'PL Backup', name: 'PL Backup' },
+  { id: 'Línea PD', name: 'Línea PD' },
+  { id: 'Línea PL', name: 'Línea PL' },
   { id: 'Laboratorio Calidad', name: 'Laboratorio Calidad' },
   { id: 'Borygo', name: 'Borygo' },
   { id: 'LEF', name: 'LEF' },

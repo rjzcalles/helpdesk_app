@@ -148,17 +148,15 @@ const IncidentModal = ({
 
 // --- Configuración de Áreas y Colores ---
 const areaConfig = {
-    'Nissan/Renault': { position: new THREE.Vector3(-47, 18, 10), label: 'Nissan/Renault' },
+    'Línea PS': { position: new THREE.Vector3(-47, 18, 10), label: 'Línea PS' },
     'Oficinas': { position: new THREE.Vector3(-48, -103, 10), label: 'Oficinas' },
     'netbees': { position: new THREE.Vector3(-115, -107, 10), label: 'Netbees' },
     '3D': { position: new THREE.Vector3(40, -103, 10), label: '3D' },
     'racores': { position: new THREE.Vector3(-115, 60, 10), label: 'Racores' },
-    'PS': { position: new THREE.Vector3(-26, -14, 10), label: 'PS' },
     'Hidroalcohol': { position: new THREE.Vector3(4, -103, 10), label: 'Hidroalcohol' },
     'Recepción': { position: new THREE.Vector3(56, -103, 10), label: 'Recepción' },
-    'PD': { position: new THREE.Vector3(4, -20, 10), label: 'PD' },
-    'Crippas y Bancos': { position: new THREE.Vector3(-20, -50, 10), label: 'Crippas y Bancos' },
-    'PL Backup': { position: new THREE.Vector3(-12, -76, 10), label: 'PL Backup' },
+    'Línea PD': { position: new THREE.Vector3(4, -20, 10), label: 'Línea PD' },
+    'Línea PL': { position: new THREE.Vector3(-20, -50, 10), label: 'Línea PL' },
     'Laboratorio Calidad': { position: new THREE.Vector3(24, -103, 10), label: 'Laboratorio Calidad' },
     'Borygo': { position: new THREE.Vector3(103, -80, 10), label: 'Borygo' },
     'LEF': { position: new THREE.Vector3(24, -62, 10), label: 'LEF' },
