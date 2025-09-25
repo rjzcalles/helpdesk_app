@@ -163,7 +163,7 @@ exports.createIncidentWithImage = async (req, res) => {
     if (problemType === 'Ingeniería') {
       transporter.sendMail({
         from: process.env.SMTP_USER,
-        to: ['gomezpalazuelom@gmail.com'],
+        to: ['hector.erquicia@maflow.com'],
         subject: `Nueva incidencia creada: ${title}`,
         text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}\n\nTipo: ${problemType}`
       }, (err, info) => {
