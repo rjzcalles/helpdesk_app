@@ -223,7 +223,7 @@ const TicketVisualization = ({ incidents }) => {
           <ambientLight intensity={0.5} />
           <directionalLight position={[10, 20, 30]} intensity={1} />
           <Center>
-            <Svg src="/NOMBRES.svg" scale={1} fillMaterial={{ color: '#172a45' }} strokeMaterial={{ color: '#00f5d4' }} />
+            <Svg src="/plano.svg" scale={1} fillMaterial={{ color: '#172a45' }} strokeMaterial={{ color: '#00f5d4' }} />
           </Center>
           {Object.entries(incidentsByArea).map(([areaKey, areaIncidents]) => {
             const config = areaConfig[areaKey];

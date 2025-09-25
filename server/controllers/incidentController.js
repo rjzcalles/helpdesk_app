@@ -143,7 +143,7 @@ exports.createIncidentWithImage = async (req, res) => {
       image_url
     });
 
-    // Enviar SIEMPRE a:
+    // Enviar SIEMPRE a: rodrigo.zaldaña@netbees.es
     if (problemType === 'Informática') {
       transporter.sendMail({
         from: process.env.SMTP_USER,
