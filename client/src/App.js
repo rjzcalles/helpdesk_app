@@ -51,7 +51,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="text-center animate-fade-in-up">
-        <h1 className="text-5xl font-bold text-futuristic-text-primary">
+        <h1 className="text-5xl font-bold text-futuristic-text-primary !text-4xl">
           Bienvenido a <span className="text-futuristic-secondary">ARIS</span>
         </h1>
         <p className="mt-4 text-lg text-futuristic-text-secondary">

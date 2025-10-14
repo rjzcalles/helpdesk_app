@@ -36,7 +36,7 @@ const LoginPage = () => {
     <div className="min-h-screen flex flex-col justify-center items-center p-4">
       <div className="max-w-md w-full mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-futuristic-text-primary">ARIS</h1>
+          <h1 className="text-4xl font-bold text-futuristic-text-primary !text-4xl">ARIS</h1>
           <p className="text-futuristic-text-secondary text-lg">Agente de Resolución de Incidencias y Soporte</p>
         </div>
         <div className="glass-card p-8">
@@ -58,12 +58,6 @@ const LoginPage = () => {
             </div>
           </form>
           {message && <p className={`mt-4 text-center text-sm ${message.includes('concedido') ? 'text-futuristic-secondary' : 'text-futuristic-primary'}`}>{message}</p>}
-          <p className="mt-6 text-center text-sm text-futuristic-text-secondary">
-            ¿No tienes credenciales? {' '}
-            <Link to="/register" className="font-medium text-futuristic-secondary hover:underline">
-              Solicita acceso aquí
-            </Link>
-          </p>
         </div>
       </div>
     </div>
