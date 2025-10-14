@@ -52,10 +52,10 @@ const HomePage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="text-center animate-fade-in-up">
         <h1 className="text-5xl font-bold text-futuristic-text-primary">
-          Bienvenido a <span className="text-futuristic-secondary">Helpdesk</span>
+          Bienvenido a <span className="text-futuristic-secondary">ARIS</span>
         </h1>
         <p className="mt-4 text-lg text-futuristic-text-secondary">
-          Plataforma de Soporte de Incidencias
+          Agente de Resolución de Incidencias y Soporte
         </p>
         <div className="mt-8 flex flex-col items-center gap-4 w-full">
           <Link 
@@ -68,11 +68,6 @@ const HomePage = () => {
             className="px-8 py-3 font-bold uppercase tracking-wider text-futuristic-secondary border-2 border-futuristic-secondary rounded-lg hover:bg-futuristic-secondary hover:text-futuristic-background transition-all duration-300 transform hover:scale-105 hover:shadow-neon-cyan w-4/5 max-w-xs text-center"
           >
             Operarios
-          </Link>
-          <Link 
-            to="/register" 
-            className="px-8 py-3 font-bold uppercase tracking-wider text-futuristic-secondary border-2 border-futuristic-secondary rounded-lg hover:bg-futuristic-secondary hover:text-futuristic-background transition-all duration-300 transform hover:scale-105 hover:shadow-neon-cyan w-4/5 max-w-xs text-center">
-            Registrarse
           </Link>
           
         </div>

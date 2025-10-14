@@ -147,7 +147,7 @@ exports.createIncidentWithImage = async (req, res) => {
     if (problemType === 'Informática') {
       transporter.sendMail({
         from: process.env.SMTP_USER,
-        to: ['rodrigo.zaldana@netbees.es'],
+        to: ['rodrigo.zaldana@netbees.es', 'diego.garcia@netbees.es'],
         subject: `Nueva incidencia creada: ${title}`,
         text: `Se ha creado una nueva incidencia en el área ${area}.\n\nDescripción: ${description}\n\nTipo: ${problemType}`
       }, (err, info) => {

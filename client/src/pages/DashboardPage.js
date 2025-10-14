@@ -182,7 +182,7 @@ const DashboardPage = () => {
       <div className="max-w-screen-2xl mx-auto">
         <header className="flex justify-between items-center mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <div>
-            <h1 className="text-3xl font-bold text-futuristic-text-primary">Help Desk Interface</h1>
+            <h1 className="text-3xl font-bold text-futuristic-text-primary">ARIS - Dashboard</h1>
             <p className="text-futuristic-text-secondary">Estado de la planta en tiempo real</p>
           </div>
           <button onClick={handleLogout} className="bg-futuristic-primary/80 text-white font-semibold px-4 py-2 rounded-lg hover:bg-futuristic-primary transition-all duration-300 hover:shadow-neon-red">

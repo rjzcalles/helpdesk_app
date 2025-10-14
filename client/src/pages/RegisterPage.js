@@ -25,8 +25,8 @@ const RegisterPage = () => {
     <div className="min-h-screen flex flex-col justify-center items-center p-4">
       <div className="max-w-md w-full mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-futuristic-text-primary">Helpdesk</h1>
-          <p className="text-futuristic-text-secondary text-lg">Plataforma de Soporte de Incidencias</p>
+          <h1 className="text-4xl font-bold text-futuristic-text-primary">ARIS</h1>
+          <p className="text-futuristic-text-secondary text-lg">Agente de Resolución de Incidencias y Soporte</p>
         </div>
         <div className="glass-card p-8">
           <h2 className="text-2xl font-bold text-center text-futuristic-secondary mb-6">[ Solicitar Acceso ]</h2>
