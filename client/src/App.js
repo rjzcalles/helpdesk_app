@@ -51,15 +51,19 @@ const HomePage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="text-center animate-fade-in-up">
-        <h1 className="text-5xl font-bold text-futuristic-text-primary !text-4xl">
-          Bienvenido a <span className="text-futuristic-secondary">ARIS</span>
-        </h1>
-        <p className="mt-4 text-lg text-futuristic-text-secondary">
+        <img
+          src="/ARIS2.png"
+          alt="ARIS"
+          className="mx-auto mb-0 w-60 h-auto max-w-xs"
+        />
+        <p
+          className="mt-0 text-lg text-futuristic-text-secondary"
+        >
           Agente de Resolución de Incidencias y Soporte
         </p>
         <div className="mt-8 flex flex-col items-center gap-4 w-full">
-          <Link 
-            to="/login" 
+          <Link
+            to="/login"
             className="px-8 py-3 font-bold uppercase tracking-wider text-white bg-futuristic-primary rounded-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 hover:shadow-neon-red w-4/5 max-w-xs text-center">
             Iniciar Sesión
           </Link>
@@ -69,7 +73,6 @@ const HomePage = () => {
           >
             Operarios
           </Link>
-          
         </div>
       </div>
     </div>
